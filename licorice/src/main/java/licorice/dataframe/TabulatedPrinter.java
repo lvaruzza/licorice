@@ -32,8 +32,15 @@ public class TabulatedPrinter extends DataFramePrinter implements Closeable {
 
 	@Override
 	public void printTransposed(DataFrame data) {
-		// TODO Auto-generated method stub
+		PrintStream ps = new PrintStream(out);
+		ps.print(sep);
+		ps.println(data.rowStream().map(x -> x.getName()).collect(Collectors.joining(sep)));
 		
+		data.columnStream().forEach(col -> {
+			ps.print(col.getName());
+			ps.print(sep);
+			ps.println(col.stream().map( x -> x.toString()).collect(Collectors.joining(sep)));
+		});		
 	}
 
 	public void close() throws IOException {
