@@ -52,8 +52,7 @@ public class Main {
 		
 	}
 	
-	
-	public static void main(String[] argv) {
+	public void run(String[] argv) {
 		Parameters pars = new Parameters();
 		JCommander jc = new JCommander(pars);
 		jc.setProgramName("licorice");
@@ -82,7 +81,12 @@ public class Main {
 			System.err.println("Analysis Failed");
 			e.printStackTrace();
 		}
-
+		
+	}
+	
+	public static void main(String[] argv) {
+		Main main = new Main();
+		main.run(argv);
 	}
 
 }

@@ -11,6 +11,7 @@ import org.slf4j.LoggerFactory;
 
 import gatkrunner.gatk.GATKFacade;
 import gatkrunner.gatk.Utils;
+import utils.ZipUtil;
 import utils.reference.GenomeRef;
 
 public class Analysis {
@@ -24,8 +25,8 @@ public class Analysis {
 
 	private Thread thread;
 	
-	public Analysis(final GenomeRef reference,final Path output,final Path variantsDir) throws IOException {
-		this(reference,output,Utils.listVCFFiles(variantsDir));
+	public Analysis(final GenomeRef reference,final Path output,final Path variants) throws IOException {
+		this(reference,output,Utils.listVCFFiles(ZipUtil.directoryfy(variants)));
 	}
 	
 	public Analysis(final GenomeRef reference,final Path output,final Stream<Path> variants) {

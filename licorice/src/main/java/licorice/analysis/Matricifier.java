@@ -40,7 +40,7 @@ public class Matricifier {
 			GenotypesContext gctx = var.getGenotypes();
 			
 			Stream<String> gts = StreamSupport.stream(gctx.iterateInSampleNameOrder().spliterator(),false)
-									.map( gt -> gt.isCalled() ? gt.getGenotypeString() : var.getReference().getDisplayString());
+									.map( gt -> gt.getGenotypeString() );
 
 			String name=var.getID().equals(".") 
 					? var.getContig() + ":" + Integer.toString(var.getStart())
@@ -70,7 +70,7 @@ public class Matricifier {
 				String[] as=new String[n];
 				int i=0;
 				for(Allele a:gt.getAlleles()) {
-					as[i++]=a.isNoCall() ? var.getReference().getBaseString() : a.getDisplayString();
+					as[i++]=a.isNoCall() ? "." /*var.getReference().getBaseString()*/ : a.getDisplayString();
 				}
 				genolst.add(as);
 				
