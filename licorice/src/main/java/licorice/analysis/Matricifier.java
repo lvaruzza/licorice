@@ -26,26 +26,31 @@ public class Matricifier {
 	public void matricify(Path combinedVariants, Path matrixFile) throws IOException {
 		String path = matrixFile.toAbsolutePath().toString();
 		String base = FilenameUtils.removeExtension(path);
-		printFormat1(combinedVariants,Paths.get(base + "_1.txt"));
-		printFormat2(combinedVariants,Paths.get(base + "_2.txt"));
+		printFormat1(combinedVariants,Paths.get(base + ".SNP_1.txt"),true);
+		printFormat2(combinedVariants,Paths.get(base + ".SNP_2.txt"),true);
+		
+		printFormat1(combinedVariants,Paths.get(base + ".ALL_1.txt"),true);
+		printFormat2(combinedVariants,Paths.get(base + ".ALL_2.txt"),true);		
 	}
 
-	public void printFormat1(Path combinedVariants, Path matrixFile) throws IOException {
+	public void printFormat1(Path combinedVariants, Path matrixFile,boolean snpOnly) throws IOException {
 		File varFile = combinedVariants.toFile();
 		VCFFileReader reader = new VCFFileReader(varFile);
 		List<String> samples = reader.getFileHeader().getSampleNamesInOrder();
 		DataFrame dt = new MemoryDataFrame();
 		dt.setColNames(samples.stream().collect(Collectors.toList()));
 		for(VariantContext var:reader) {
-			GenotypesContext gctx = var.getGenotypes();
-			
-			Stream<String> gts = StreamSupport.stream(gctx.iterateInSampleNameOrder().spliterator(),false)
-									.map( gt -> gt.getGenotypeString() );
-
-			String name=var.getID().equals(".") 
-					? var.getContig() + ":" + Integer.toString(var.getStart())
-					: var.getID();
-			dt.addRow(name, gts.collect(Collectors.toList()));
+			if (snpOnly && !var.getID().equals(".")) {
+				GenotypesContext gctx = var.getGenotypes();
+				
+				Stream<String> gts = StreamSupport.stream(gctx.iterateInSampleNameOrder().spliterator(),false)
+										.map( gt -> gt.getGenotypeString() );
+	
+				String name=var.getID().equals(".") 
+						? var.getContig() + ":" + Integer.toString(var.getStart())
+						: var.getID();
+				dt.addRow(name, gts.collect(Collectors.toList()));
+			}
 		}
 		reader.close();
 		
@@ -54,7 +59,7 @@ public class Matricifier {
 		output.close();
 	}
 
-	public void printFormat2(Path combinedVariants, Path matrixFile) throws IOException {
+	public void printFormat2(Path combinedVariants, Path matrixFile,boolean snpOnly) throws IOException {
 		File varFile = combinedVariants.toFile();
 		VCFFileReader reader = new VCFFileReader(varFile);
 		List<String> samples = reader.getFileHeader().getSampleNamesInOrder();
@@ -62,26 +67,29 @@ public class Matricifier {
 		dt.setColNames(samples.stream().collect(Collectors.toList()));
 		
 		for(VariantContext var:reader) {
-			GenotypesContext gctx = var.getGenotypes();
-			List<String[]> genolst = new LinkedList<String[]>();
-			
-			for( Genotype gt: gctx.iterateInSampleNameOrder()) {
-				int n=gt.getPloidy();
-				String[] as=new String[n];
-				int i=0;
-				for(Allele a:gt.getAlleles()) {
-					as[i++]=a.isNoCall() ? "." /*var.getReference().getBaseString()*/ : a.getDisplayString();
-				}
-				genolst.add(as);
+			if (snpOnly && !var.getID().equals(".")) {
+	
+				GenotypesContext gctx = var.getGenotypes();
+				List<String[]> genolst = new LinkedList<String[]>();
 				
+				for( Genotype gt: gctx.iterateInSampleNameOrder()) {
+					int n=gt.getPloidy();
+					String[] as=new String[n];
+					int i=0;
+					for(Allele a:gt.getAlleles()) {
+						as[i++]=a.isNoCall() ? "." /*var.getReference().getBaseString()*/ : a.getDisplayString();
+					}
+					genolst.add(as);
+					
+				}
+				
+				String name=var.getID().equals(".") 
+						? var.getContig() + ":" + Integer.toString(var.getStart())
+						: var.getID();
+	
+				dt.addRow(name, genolst.stream().map(x -> x[0]).collect(Collectors.toList()));
+				dt.addRow(name, genolst.stream().map(x -> x[1]).collect(Collectors.toList()));
 			}
-			
-			String name=var.getID().equals(".") 
-					? var.getContig() + ":" + Integer.toString(var.getStart())
-					: var.getID();
-
-			dt.addRow(name, genolst.stream().map(x -> x[0]).collect(Collectors.toList()));
-			dt.addRow(name, genolst.stream().map(x -> x[1]).collect(Collectors.toList()));
 		}
 		reader.close();
 		

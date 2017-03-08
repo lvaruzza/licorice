@@ -30,6 +30,6 @@ public class TestZip {
 		for(File f:FileUtils.listFiles(outputDir.toFile(), new String[]{"vcf"}, false)) {
 			System.out.println(f.toString());
 		}
-		FileUtils.deleteDirectory(outputDir.toFile());
+		FileUtils.forceDeleteOnExit(outputDir.toFile());
 	}
 }

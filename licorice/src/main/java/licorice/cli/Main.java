@@ -16,7 +16,7 @@ public class Main {
 	private static Logger logger = LoggerFactory.getLogger(Main.class);
 	
 	public static class Parameters {
-		@Parameter(names = {"-i","--input-dir"}, description = "Directory with vcf files", arity = 1,required=true)
+		@Parameter(names = {"-i","--input"}, description = "Directory or ZIP  with vcf files", arity = 1,required=true)
 		private String inputDir;
 
 		@Parameter(names = {"-r","--reference"}, description = "Reference Genome", arity = 1,required=true)

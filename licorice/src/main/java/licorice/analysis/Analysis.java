@@ -1,8 +1,10 @@
 package licorice.analysis;
 
 import java.io.IOException;
+import java.lang.Thread.UncaughtExceptionHandler;
 import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.util.concurrent.Callable;
+import java.util.function.Consumer;
 import java.util.stream.Stream;
 
 import org.apache.commons.io.FilenameUtils;
@@ -22,8 +24,11 @@ public class Analysis {
 	private String base;
 	private Path combined;
 	private Matricifier mat = new Matricifier();
-
+	private Callable<Void> onfinish = null; 
+	private Consumer<Integer> progressConsumer = null; 
 	private Thread thread;
+
+	private UncaughtExceptionHandler onexception;
 	
 	public Analysis(final GenomeRef reference,final Path output,final Path variants) throws IOException {
 		this(reference,output,Utils.listVCFFiles(ZipUtil.directoryfy(variants)));
@@ -41,14 +46,25 @@ public class Analysis {
 			logger.info("Generating " + combined.toString() + " file");
 			gatk.combineVariants(reference, variants, combined);
 			logger.info("Matricifying " + combined.toString());
+			if (progressConsumer!=null) progressConsumer.accept(50);
 			try {
 				mat.matricify(combined, output);
-			} catch (IOException e) {
-				e.printStackTrace();
+			} catch (IOException e1) {
+				throw new RuntimeException(e1);
 			}
 			logger.info("====> Analysis finished.");
+			if (progressConsumer!=null) progressConsumer.accept(100);
+			if (onfinish!=null) {
+				try {
+					onfinish.call();
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
 		};		
 		thread = new Thread(gatkTask);
+		if (onexception != null)
+			thread.setUncaughtExceptionHandler(onexception);
 	}
 	
 	public void start() {
@@ -57,5 +73,17 @@ public class Analysis {
 	
 	public boolean isCompleted() {
 		return !thread.isAlive();
+	}
+	
+	public void onFinish(Callable<Void> callback) {
+		onfinish = callback;
+	}
+	
+	public void onException(UncaughtExceptionHandler h) {
+		onexception=h;
+	}
+	
+	public void progressListener(Consumer<Integer> consumer	) {
+		progressConsumer = consumer;
 	}
 }

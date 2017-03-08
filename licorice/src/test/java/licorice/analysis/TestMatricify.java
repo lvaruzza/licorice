@@ -19,6 +19,7 @@ public class TestMatricify {
 			e.printStackTrace();
 			Assert.fail();
 		}
-		Assert.assertTrue(Files.exists(output));
+		
+		Assert.assertTrue(Files.exists(Paths.get("output.SNP_1.txt")));
 	}
 }
