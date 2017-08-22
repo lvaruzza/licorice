@@ -12,7 +12,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import gatkrunner.gatk.GATKFacade;
-import gatkrunner.gatk.Utils;
+import gatkrunner.gatk.VCFUtils;
 import utils.ZipUtil;
 import utils.reference.GenomeRef;
 
@@ -31,7 +31,7 @@ public class Analysis {
 	private UncaughtExceptionHandler onexception;
 	
 	public Analysis(final GenomeRef reference,final Path output,final Path variants) throws IOException {
-		this(reference,output,Utils.listVCFFiles(ZipUtil.directoryfy(variants)));
+		this(reference,output,VCFUtils.listVCFFiles(ZipUtil.directoryfy(variants)));
 	}
 	
 	public Analysis(final GenomeRef reference,final Path output,final Stream<Path> variants) {

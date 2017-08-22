@@ -24,7 +24,7 @@ public class MemoryDataFrame implements DataFrame {
 			data = new Vector<Object>(df.numberOfRows());
 			data.setSize(df.numberOfRows());
 			Iterator<Row> rows = df.rowIterator();
-			System.out.println(String.format("Copying %d rows to column", df.numberOfRows()));
+			//System.out.println(String.format("Copying %d rows to column", df.numberOfRows()));
 			
 			for(int j=0;j<df.numberOfRows();j++) {
 				Row row = rows.next();
