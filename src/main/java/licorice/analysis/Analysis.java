@@ -1,25 +1,25 @@
 package licorice.analysis;
 
+import gatkrunner.gatk.GATKFacade;
+import gatkrunner.gatk.VCFUtils;
+import licorice.runner.RunBCFtools;
+import org.apache.commons.io.FilenameUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import utils.ZipUtil;
+import utils.reference.GenomeRef;
+
 import java.io.IOException;
 import java.lang.Thread.UncaughtExceptionHandler;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.concurrent.Callable;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
-import org.apache.commons.io.FilenameUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import gatkrunner.gatk.GATKFacade;
-import gatkrunner.gatk.VCFUtils;
-import utils.ZipUtil;
-import utils.reference.GenomeRef;
-
 public class Analysis {
 	private static Logger logger = LoggerFactory.getLogger(Analysis.class);
 	
-	private GATKFacade gatk;
 	private Path outputDir;
 	private String base;
 	private Path combined;
@@ -27,24 +27,42 @@ public class Analysis {
 	private Callable<Void> onfinish = null; 
 	private Consumer<Integer> progressConsumer = null; 
 	private Thread thread;
+    private boolean useGATK = false;
 
 	private UncaughtExceptionHandler onexception;
 	
 	public Analysis(final GenomeRef reference,final Path output,final Path variants) throws IOException {
 		this(reference,output,VCFUtils.listVCFFiles(ZipUtil.directoryfy(variants)));
 	}
-	
+
+    private void combineVariantsGATK(final GenomeRef reference,final Stream<Path> variants) {
+        GATKFacade gatk = new GATKFacade();
+        logger.info("Generating " + combined.toString() + " file using GATK");
+        gatk.combineVariants(reference, variants, combined);
+    }
+
+    private void combineVariantsBCF(final GenomeRef reference,final Stream<Path> variants) {
+        logger.info("Generating " + combined.toString() + " file using bcftools");
+        RunBCFtools runner = new RunBCFtools();
+        runner.combineVariants(reference,combined,variants);
+    }
+
 	public Analysis(final GenomeRef reference,final Path output,final Stream<Path> variants) {
 		logger.info("Output file " + output);
 		outputDir = output.toAbsolutePath().getParent();
 		base = FilenameUtils.removeExtension(output.toString());
 		logger.info("Output dir " + outputDir);
 		logger.info("Output basename " + base);
-		combined = outputDir.resolve(base + ".vcf");
-		gatk = new GATKFacade();
-		Runnable gatkTask = () -> {
-			logger.info("Generating " + combined.toString() + " file");
-			gatk.combineVariants(reference, variants, combined);
+		combined = outputDir.resolve(base + ".vcf.gz");
+		Runnable analysisTask = () -> {
+		    if (useGATK) {
+                combineVariantsGATK(reference,variants);
+            } else {
+		        combineVariantsBCF(reference,variants);
+            }
+            if(!Files.exists(combined)) {
+		        throw new RuntimeException(String.format("File '%s' not generated, fail in merging",combined.toString()));
+            }
 			logger.info("Matricifying " + combined.toString());
 			if (progressConsumer!=null) progressConsumer.accept(50);
 			try {
@@ -62,7 +80,7 @@ public class Analysis {
 				}
 			}
 		};		
-		thread = new Thread(gatkTask);
+		thread = new Thread(analysisTask);
 		if (onexception != null)
 			thread.setUncaughtExceptionHandler(onexception);
 	}

@@ -29,13 +29,13 @@ public class Matricifier {
 		printFormat1(combinedVariants,Paths.get(base + ".SNP_1.txt"),true);
 		printFormat2(combinedVariants,Paths.get(base + ".SNP_2.txt"),true);
 		
-		printFormat1(combinedVariants,Paths.get(base + ".ALL_1.txt"),true);
-		printFormat2(combinedVariants,Paths.get(base + ".ALL_2.txt"),true);		
+		printFormat1(combinedVariants,Paths.get(base + ".ALL_1.txt"),false);
+		printFormat2(combinedVariants,Paths.get(base + ".ALL_2.txt"),false);
 	}
 
 	public void printFormat1(Path combinedVariants, Path matrixFile,boolean snpOnly) throws IOException {
 		File varFile = combinedVariants.toFile();
-		VCFFileReader reader = new VCFFileReader(varFile);
+		VCFFileReader reader = new VCFFileReader(varFile,false);
 		List<String> samples = reader.getFileHeader().getSampleNamesInOrder();
 		DataFrame dt = new MemoryDataFrame();
 		dt.setColNames(samples.stream().collect(Collectors.toList()));
@@ -57,8 +57,8 @@ public class Matricifier {
 			}
 		}
 		TabulatedPrinter output = new TabulatedPrinter(new FileOutputStream(matrixFile.toFile()));
-		//output.printTransposed(dt);
-        output.print(dt);
+		output.printTransposed(dt);
+        //output.print(dt);
 		output.close();
 	}
 
