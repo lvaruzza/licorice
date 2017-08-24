@@ -5,17 +5,24 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.InputStreamReader;
 
 public class RunBinary {
     private static Logger log = LoggerFactory.getLogger(RunBinary.class);
 
+    private static String baseDir=".";
+
+    public static void setBaseDir(String base) {
+        baseDir = base;
+    }
+
     public String getBinary(String name) {
         switch(System.getProperty("os.name")) {
             case "Linux":
-                return "native/linux/" + name;
+                return baseDir + "/native/linux/" + name;
             default:
-                return "native\\windows\\" + name;
+                return baseDir + "\\native\\windows\\" + name;
         }
     }
 
@@ -47,6 +54,12 @@ public class RunBinary {
     }
 
     public int runBinary(String name,String... args) {
-        return run(ObjectArrays.concat(getBinary(name),args));
+        String programPath = getBinary(name);
+        if (!new File(programPath).exists()) {
+            String msg = String.format("Executable '%s' does not exist", programPath);
+            log.error(msg);
+            throw new RuntimeException(msg);
+        }
+        return run(ObjectArrays.concat(programPath,args));
     }
 }
