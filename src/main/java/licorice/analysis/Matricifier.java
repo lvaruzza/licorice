@@ -50,9 +50,9 @@ public class Matricifier {
 						? var.getContig() + ":" + Integer.toString(var.getStart())
 						: var.getID();
 
-				System.out.println(String.format("Adding %s: NC:%d filter:%s",name,
+				/*System.out.println(String.format("Adding %s: NC:%d filter:%s",name,
                         var.getNoCallCount(),
-                        StringUtils.join(var.getFilters(),"|")));
+                        StringUtils.join(var.getFilters(),"|")));*/
 				dt.addRow(name, gts.collect(Collectors.toList()));
 			}
 		}
