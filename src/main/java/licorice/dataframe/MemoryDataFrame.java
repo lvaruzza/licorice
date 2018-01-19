@@ -62,7 +62,6 @@ public class MemoryDataFrame implements DataFrame {
 		
 		@Override
 		public boolean tryAdvance(Consumer<? super Column> action) {
-			System.out.println("**** Index = " + index + " cols = " + d.numberOfColumns());
 			action.accept(new MemoryColumn(d,d.getColName(index),index));
 			return (++index) < d.numberOfColumns();
 		}

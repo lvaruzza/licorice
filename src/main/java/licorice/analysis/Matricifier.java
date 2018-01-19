@@ -91,7 +91,7 @@ public class Matricifier {
 						: var.getID();
 	
 				dt.addRow(name, genolst.stream().map(x -> x[0]).collect(Collectors.toList()));
-				dt.addRow(name, genolst.stream().map(x -> x[1]).collect(Collectors.toList()));
+				dt.addRow(name, genolst.stream().map(x -> (x.length >1)  ? x[1] : "." ).collect(Collectors.toList()));
 			}
 		}
 		reader.close();

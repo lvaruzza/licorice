@@ -4,9 +4,7 @@ import com.google.common.collect.ObjectArrays;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.InputStreamReader;
+import java.io.*;
 
 public class RunBinary {
     private static Logger log = LoggerFactory.getLogger(RunBinary.class);
@@ -48,9 +46,44 @@ public class RunBinary {
             }
             return p.exitValue();
         } catch (Exception e) {
+            log.error(e.getMessage());
             e.printStackTrace();
+            return -1;
         }
-        return -1;
+    }
+
+    public int run(File stdout,String... args) {
+        Process p;
+        log.info("Running: '" + String.join(" ",args) + "' on " + System.getProperty("os.name"));
+        log.info(String.format("Redirecting output to file '%s'",stdout.getAbsolutePath()));
+        try(PrintWriter out = new PrintWriter(stdout)) {
+            p = Runtime.getRuntime().exec(args);
+            BufferedReader errorReader =
+                    new BufferedReader(new InputStreamReader(p.getErrorStream()));
+
+            BufferedReader outReader =
+                    new BufferedReader(new InputStreamReader(p.getInputStream()));
+
+            String lineErr = null;
+            String lineOut = null;
+
+            while ((lineOut = outReader.readLine())!= null){
+                if (lineOut != null) {
+                    out.println(lineOut);
+                }
+            }
+            p.waitFor();
+
+            while ((lineErr = errorReader.readLine())!= null){
+                log.error(lineErr);
+            }
+
+            return p.exitValue();
+        } catch (Exception e) {
+            log.error(e.getMessage());
+            e.printStackTrace();
+            return -1;
+        }
     }
 
     public int runBinary(String name,String... args) {
@@ -62,4 +95,15 @@ public class RunBinary {
         }
         return run(ObjectArrays.concat(programPath,args));
     }
+
+    public int runBinary(String name,File stdout,String... args) {
+        String programPath = getBinary(name);
+        if (!new File(programPath).exists()) {
+            String msg = String.format("Executable '%s' does not exist", programPath);
+            log.error(msg);
+            throw new RuntimeException(msg);
+        }
+        return run(stdout,ObjectArrays.concat(programPath,args));
+    }
+
 }
