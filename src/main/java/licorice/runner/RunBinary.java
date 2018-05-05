@@ -28,8 +28,10 @@ public class RunBinary {
         Process p;
         log.info("Running: '" + String.join(" ",args) + "' on " + System.getProperty("os.name"));
         try {
-            p = Runtime.getRuntime().exec(args);
-            p.waitFor();
+            ProcessBuilder pb = new ProcessBuilder(args);
+
+            p = pb.start();
+
             BufferedReader errorReader =
                     new BufferedReader(new InputStreamReader(p.getErrorStream()));
 
@@ -44,6 +46,7 @@ public class RunBinary {
                 if (lineOut != null) log.info(lineOut);
                 if (lineErr != null) log.error(lineErr);
             }
+            p.waitFor();
             return p.exitValue();
         } catch (Exception e) {
             log.error(e.getMessage());

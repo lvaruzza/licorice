@@ -17,11 +17,14 @@ import static java.util.Optional.empty;
 public class RunBCFtools extends RunBinary {
     private static Logger log = LoggerFactory.getLogger(RunBinary.class);
 
-    public Optional<Path> normalizeVariant(GenomeRef reference, Path out, Path input) {
+    public Optional<Path> normalizeVariant(GenomeRef reference, int minQual,Path out, Path input) {
         Path out1 = out.resolveSibling(out.getFileName() + ".split.vcf");
+
+        Path out2 = out.resolveSibling(out.getFileName() + ".norm.vcf.gz");
 
         int ret1=runBinary("bcftools","view",
                 "-a",
+                "-U",
                 "-o",out1.toString(),
                 "-O","v",
                 input.toString());
@@ -34,7 +37,7 @@ public class RunBCFtools extends RunBinary {
 
         int ret2=runBinary("bcftools","norm",
                 "-f",reference.fastaFile().toString(),
-                "-o",out.toString(),
+                "-o",out2.toString(),
                 "-O","z",
                 out1.toString());
 
@@ -44,34 +47,46 @@ public class RunBCFtools extends RunBinary {
         }
 
 
-        int ret3=runBinary("bcftools","index",
+        int ret3=runBinary("bcftools","filter",
+                String.format("-i 'QUAL>=%d'",minQual),
+                "-o",out.toString(),
+                "-O","z",
+                out2.toString());
+
+        if (ret3!=0) {
+            log.error(String.format("Filter of '%s' failed",out2.toString()));
+            return Optional.empty();
+        }
+
+
+        int ret4=runBinary("bcftools","index",
                 "-f",
                 out.toString());
 
 
-        if (ret3!=0)  {
-            log.error(String.format("Index of '%s' failed",out1.toString()));
+        if (ret4!=0)  {
+            log.error(String.format("Index of '%s' failed",out.toString()));
             return Optional.empty();
         } else {
             return Optional.of(out);
         }
     }
 
-    public Stream<Path> normalizeVariants(GenomeRef reference,Path tempDir, Stream<Path> variants) {
+    public Stream<Path> normalizeVariants(GenomeRef reference,int minQual,Path tempDir, Stream<Path> variants) {
         return variants.map( p -> {
             Path out =tempDir.resolve(p.getFileName());
-            return normalizeVariant(reference,out,p);
+            return normalizeVariant(reference,minQual,out,p);
         }).filter(Optional::isPresent).map(Optional::get);
     }
 
-    public int combineVariants(GenomeRef reference,Path combined, Stream<Path> variants) {
+    public int combineVariants(GenomeRef reference,int minQual,Path combined, Stream<Path> variants) {
         try {
 
             Path tempDir  = Files.createTempDirectory("licorice_norm");
 
             File tempCombined = File.createTempFile("licorice_merged",".vcf");
 
-            Stream<Path> normalized = normalizeVariants(reference,tempDir,variants);
+            Stream<Path> normalized = normalizeVariants(reference,minQual,tempDir,variants);
 
             int ret=runBinary("bcftools",Stream.concat(Stream.of("merge",
                     "-o",tempCombined.getAbsolutePath(),

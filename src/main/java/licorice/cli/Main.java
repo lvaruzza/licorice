@@ -25,6 +25,9 @@ public class Main {
 		@Parameter(names = {"-o","--output"}, description = "Output file name", arity = 1,required=true)
 		private String output;
 
+		@Parameter(names = {"-q","--minQual"}, description = "Minimum variant Quality (default=30)", arity = 1,required=false)
+		private int minQual = 30;
+
 		public String getInputDir() {
 			return inputDir;
 		}
@@ -49,8 +52,11 @@ public class Main {
 			this.reference = reference;
 		}
 
-		
-	}
+
+        public int getMinQual() {
+            return minQual;
+        }
+    }
 	
 	public void run(String[] argv) {
 		Parameters pars = new Parameters();
@@ -68,6 +74,7 @@ public class Main {
 		try {
 			Analysis analysis = new Analysis(
 					new SimpleGenomeRef(Paths.get(pars.getReference())),
+					pars.getMinQual(),
 					Paths.get(pars.getOutput()),
 					Paths.get(pars.getInputDir())
 				);

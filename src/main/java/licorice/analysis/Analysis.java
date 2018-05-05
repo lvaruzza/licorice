@@ -31,8 +31,8 @@ public class Analysis {
 
 	private UncaughtExceptionHandler onexception;
 	
-	public Analysis(final GenomeRef reference,final Path output,final Path variants) throws IOException {
-		this(reference,output,VCFUtils.listVCFFiles(ZipUtil.directoryfy(variants)));
+	public Analysis(final GenomeRef reference,final int minQual,final Path output,final Path variants) throws IOException {
+		this(reference,minQual,output,VCFUtils.listVCFFiles(ZipUtil.directoryfy(variants)));
 	}
 
     private void combineVariantsGATK(final GenomeRef reference,final Stream<Path> variants) {
@@ -41,13 +41,13 @@ public class Analysis {
         gatk.combineVariants(reference, variants, combined);
     }
 
-    private void combineVariantsBCF(final GenomeRef reference,final Stream<Path> variants) {
+    private void combineVariantsBCF(final GenomeRef reference,final int minQual,final Stream<Path> variants) {
         logger.info("Generating " + combined.toString() + " file using bcftools");
         RunBCFtools runner = new RunBCFtools();
-        runner.combineVariants(reference,combined,variants);
+        runner.combineVariants(reference,minQual,combined,variants);
     }
 
-	public Analysis(final GenomeRef reference,final Path output,final Stream<Path> variants) {
+	public Analysis(final GenomeRef reference,final int minQual,final Path output,final Stream<Path> variants) {
 		logger.info("Output file " + output);
 		outputDir = output.toAbsolutePath().getParent();
 		base = FilenameUtils.removeExtension(output.toString());
@@ -58,7 +58,7 @@ public class Analysis {
 		    if (useGATK) {
                 combineVariantsGATK(reference,variants);
             } else {
-		        combineVariantsBCF(reference,variants);
+		        combineVariantsBCF(reference,minQual,variants);
             }
             if(!Files.exists(combined)) {
 		        throw new RuntimeException(String.format("File '%s' not generated, fail in merging",combined.toString()));
