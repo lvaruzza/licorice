@@ -43,7 +43,7 @@ public class RunBinary {
 
             while ((lineErr = errorReader.readLine())!= null ||
                    (lineOut = outReader.readLine())!= null){
-                if (lineOut != null) log.info(lineOut);
+                if (lineOut != null) log.debug(lineOut);
                 if (lineErr != null) log.error(lineErr);
             }
             p.waitFor();

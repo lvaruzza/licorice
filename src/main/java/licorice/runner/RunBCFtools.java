@@ -1,22 +1,19 @@
 package licorice.runner;
 
 import com.google.common.collect.Lists;
-import jdk.nashorn.internal.runtime.options.Option;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import utils.reference.GenomeRef;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
+import java.nio.file.*;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
-import static java.util.Optional.empty;
 
 public class RunBCFtools extends RunBinary {
     private static final int CHUNK_SIZE = 96;
@@ -30,7 +27,8 @@ public class RunBCFtools extends RunBinary {
 
         int ret1=runBinary("bcftools","view",
                 "-a",
-                "-U",
+//                Remove NOCALLs
+//                "-U",
                 "-o",out1.toString(),
                 "-O","v",
                 input.toString());
@@ -85,48 +83,81 @@ public class RunBCFtools extends RunBinary {
         }).filter(Optional::isPresent).map(Optional::get);
     }
 
-    public int combineVariantsByChunks(GenomeRef reference,int minQual,Path combined, Stream<Path> variants) {
+    public int combineVariantsByChunks(GenomeRef reference,int minQual,Path combined, Stream<Path> variants) throws IOException{
         List<Path> varLst = variants.collect(Collectors.toList());
-        List<List<Path>> partitions=Lists.partition(varLst,CHUNK_SIZE);
+        List<List<Path>> partitions=Lists.partition(varLst,Math.min(CHUNK_SIZE,varLst.size()/2));
 
-        final AtomicInteger count = new AtomicInteger(0);
+        final AtomicInteger count = new AtomicInteger(1);
         Stream<Path> combinedParts = partitions.stream().map( (List<Path> vars) -> {
             int i = count.getAndIncrement();
             try {
+                log.info("=============================================================");
                 log.info(String.format("Merging step %d: Merging %d files",i,vars.size()));
-                Path tempCombined = File.createTempFile(String.format("LM%03d",i),".vcf").toPath();
-
-                combineVariants(reference,minQual,tempCombined,vars.stream());
+                log.info("=============================================================");
+                Path tempCombined = File.createTempFile(String.format("LM%03d.",i),".vcf").toPath();
+                Stream<Path> normalized = filterVariants(reference,minQual,vars.stream());
+                mergeVariants(reference,tempCombined,normalized);
                 return tempCombined;
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
         });
 
+        log.info("Merging %d chunks",partitions.size());
 
-        return combineVariants(reference,minQual,combined,combinedParts);
+        return mergeVariants(reference,combined,combinedParts);
     }
 
-    /*public int filterVariants(GenomeRef reference,int minQual,Path combined, Stream<Path> variants) {
 
-    }*/
+    public int combineVariants(GenomeRef reference, int minQual, Path combined, Stream<Path> variants) throws IOException {
+        Stream<Path> normalized = filterVariants(reference, minQual, variants);
+        mergeVariants(reference, combined, normalized);
+        return 0;
+    }
 
-    public int combineVariants(GenomeRef reference,int minQual,Path combined, Stream<Path> variants) {
+    public Stream<Path> filterVariants(GenomeRef reference,int minQual,Stream<Path> variants) throws IOException {
+        Path tempDir  = Files.createTempDirectory("licorice_norm");
+        Stream<Path> normalized = normalizeVariants(reference,minQual,tempDir,variants);
+        return normalized;
+    }
+
+    public int mergeVariants(GenomeRef reference, Path combined, Stream<Path> variants) throws IOException {
         try {
-
-            Path tempDir  = Files.createTempDirectory("licorice_norm");
 
             File tempCombined = File.createTempFile("licorice_merged",".vcf");
 
-            Stream<Path> normalized = normalizeVariants(reference,minQual,tempDir,variants);
+            String[] varLst = variants.map(p -> p.toString()).toArray(String[]::new);
 
-            int ret=runBinary("bcftools",Stream.concat(Stream.of("merge",
-                    "-o",tempCombined.getAbsolutePath(),
-                    "-O","v",
-                    "--force-samples",
-                    "--threads","4",
-                    "-m","both"),
-                    normalized.map(p -> p.toString())).toArray(String[]::new));
+
+            switch(varLst.length) {
+                case 0: throw new RuntimeException("Invalid Merge: Zero size list of vcf files");
+                case 1: {
+                    log.info(String.format("Uncompressing '%s' to '%s'",varLst[0],tempCombined.getAbsolutePath()));
+
+                    int ret1=runBinary("bcftools","view",
+                            "-a",
+                            "-U",
+                            "-o",tempCombined.getAbsolutePath(),
+                            "-O","v",
+                            varLst[0]);
+
+                    break;
+                }
+                default: {
+                    int ret=runBinary("bcftools",Stream.concat(Stream.of("merge",
+                            "-o",tempCombined.getAbsolutePath(),
+                            "-O","v",
+                            "--force-samples",
+                            "--threads","4",
+                            "-m","both"),
+                            Arrays.stream(varLst)).toArray(String[]::new));
+
+                    if (ret != 0) {
+                        return -1;
+                    }
+
+                }
+            }
 
 
 
@@ -134,9 +165,6 @@ public class RunBCFtools extends RunBinary {
 
 
 
-            if (ret != 0) {
-                return -1;
-            }
 
             /*File tempFixed = File.createTempFile("licorice_vcflib_input",".vcf");
             int ret2 = runBinary("vcfcreatemulti", tempFixed, tempCombined.getAbsolutePath());
