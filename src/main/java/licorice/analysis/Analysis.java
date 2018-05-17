@@ -44,7 +44,7 @@ public class Analysis {
     private void combineVariantsBCF(final GenomeRef reference,final int minQual,final Stream<Path> variants) {
         logger.info("Generating " + combined.toString() + " file using bcftools");
         RunBCFtools runner = new RunBCFtools();
-        runner.combineVariants(reference,minQual,combined,variants);
+        runner.combineVariantsByChunks(reference,minQual,combined,variants);
     }
 
 	public Analysis(final GenomeRef reference,final int minQual,final Path output,final Stream<Path> variants) {

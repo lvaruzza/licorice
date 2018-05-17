@@ -1,5 +1,6 @@
 package licorice.runner;
 
+import com.google.common.collect.Lists;
 import jdk.nashorn.internal.runtime.options.Option;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -9,12 +10,17 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static java.util.Optional.empty;
 
 public class RunBCFtools extends RunBinary {
+    private static final int CHUNK_SIZE = 96;
+
     private static Logger log = LoggerFactory.getLogger(RunBinary.class);
 
     public Optional<Path> normalizeVariant(GenomeRef reference, int minQual,Path out, Path input) {
@@ -78,6 +84,32 @@ public class RunBCFtools extends RunBinary {
             return normalizeVariant(reference,minQual,out,p);
         }).filter(Optional::isPresent).map(Optional::get);
     }
+
+    public int combineVariantsByChunks(GenomeRef reference,int minQual,Path combined, Stream<Path> variants) {
+        List<Path> varLst = variants.collect(Collectors.toList());
+        List<List<Path>> partitions=Lists.partition(varLst,CHUNK_SIZE);
+
+        final AtomicInteger count = new AtomicInteger(0);
+        Stream<Path> combinedParts = partitions.stream().map( (List<Path> vars) -> {
+            int i = count.getAndIncrement();
+            try {
+                log.info(String.format("Merging step %d: Merging %d files",i,vars.size()));
+                Path tempCombined = File.createTempFile(String.format("LM%03d",i),".vcf").toPath();
+
+                combineVariants(reference,minQual,tempCombined,vars.stream());
+                return tempCombined;
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        });
+
+
+        return combineVariants(reference,minQual,combined,combinedParts);
+    }
+
+    /*public int filterVariants(GenomeRef reference,int minQual,Path combined, Stream<Path> variants) {
+
+    }*/
 
     public int combineVariants(GenomeRef reference,int minQual,Path combined, Stream<Path> variants) {
         try {

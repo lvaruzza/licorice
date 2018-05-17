@@ -56,11 +56,11 @@ public class RunBinary {
     }
 
     public int run(File stdout,String... args) {
-        Process p;
+        ProcessBuilder pb = new ProcessBuilder(args);
         log.info("Running: '" + String.join(" ",args) + "' on " + System.getProperty("os.name"));
         log.info(String.format("Redirecting output to file '%s'",stdout.getAbsolutePath()));
         try(PrintWriter out = new PrintWriter(stdout)) {
-            p = Runtime.getRuntime().exec(args);
+            Process p = pb.start();
             BufferedReader errorReader =
                     new BufferedReader(new InputStreamReader(p.getErrorStream()));
 
