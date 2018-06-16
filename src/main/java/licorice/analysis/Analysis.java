@@ -23,16 +23,15 @@ public class Analysis {
 	private Path outputDir;
 	private String base;
 	private Path combined;
-	private Matricifier mat = new Matricifier();
-	private Callable<Void> onfinish = null; 
+	private Callable<Void> onfinish = null;
 	private Consumer<Integer> progressConsumer = null; 
 	private Thread thread;
     private boolean useGATK = false;
 
 	private UncaughtExceptionHandler onexception;
 	
-	public Analysis(final GenomeRef reference,final int minQual,final Path output,final Path variants) throws IOException {
-		this(reference,minQual,output,VCFUtils.listVCFFiles(ZipUtil.directoryfy(variants)));
+	public Analysis(final GenomeRef reference,final int minQual,boolean transpose,final Path output,final Path variants) throws IOException {
+		this(reference,minQual,transpose,output,VCFUtils.listVCFFiles(ZipUtil.directoryfy(variants)));
 	}
 
     private void combineVariantsGATK(final GenomeRef reference,final Stream<Path> variants) {
@@ -51,7 +50,8 @@ public class Analysis {
 		}
 	}
 
-	public Analysis(final GenomeRef reference,final int minQual,final Path output,final Stream<Path> variants) {
+	public Analysis(final GenomeRef reference,final int minQual,boolean transpose,final Path output,final Stream<Path> variants) {
+		Matricifier mat = new Matricifier(transpose);
 		logger.info("Output file " + output);
 		outputDir = output.toAbsolutePath().getParent();
 		base = FilenameUtils.removeExtension(output.toString());

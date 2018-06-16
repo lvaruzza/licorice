@@ -25,8 +25,12 @@ public class Main {
 		@Parameter(names = {"-o","--output"}, description = "Output file name", arity = 1,required=true)
 		private String output;
 
-		@Parameter(names = {"-q","--minQual"}, description = "Minimum variant Quality (default=30)", arity = 1,required=false)
-		private int minQual = 30;
+		@Parameter(names = {"-q","--minQual"}, description = "Minimum variant Quality (default=15)", arity = 1,required=false)
+		private int minQual = 15;
+
+
+		@Parameter(names = {"-t","--no-transpose"}, description = "Do NOT Transpose Matrix",required=false)
+		private boolean notTranspose = false;
 
 		public String getInputDir() {
 			return inputDir;
@@ -52,8 +56,11 @@ public class Main {
 			this.reference = reference;
 		}
 
+		public boolean isNotTranspose() {
+			return notTranspose;
+		}
 
-        public int getMinQual() {
+		public int getMinQual() {
             return minQual;
         }
     }
@@ -75,6 +82,7 @@ public class Main {
 			Analysis analysis = new Analysis(
 					new SimpleGenomeRef(Paths.get(pars.getReference())),
 					pars.getMinQual(),
+					!pars.isNotTranspose(),
 					Paths.get(pars.getOutput()),
 					Paths.get(pars.getInputDir())
 				);

@@ -20,6 +20,31 @@ public class RunBCFtools extends RunBinary {
 
     private static Logger log = LoggerFactory.getLogger(RunBinary.class);
 
+
+    public int normalizeVariantFinal(GenomeRef reference,Path out, Path input) {
+        log.info(String.format("Post Normalization. Output '%s'",out.toString()));
+
+        int ret2=runBinary("bcftools","norm",
+                "-m+any",
+                "-d","any",
+                "-f",reference.fastaFile().toString(),
+                "-o",out.toString(),
+                "-O","z",
+                input.toString());
+
+        int ret3=runBinary("bcftools","index",
+                "-t",
+                "-f",
+                out.toString());
+
+        if (ret3!=0) {
+            log.error(String.format("Index of '%s' failed", out.toString()));
+            throw new RuntimeException("Index Failed");
+        }
+
+        return ret2;
+    }
+
     public Optional<Path> normalizeVariant(GenomeRef reference, int minQual,Path out, Path input) {
         Path out1 = out.resolveSibling(out.getFileName() + ".split.vcf");
 
@@ -40,6 +65,7 @@ public class RunBCFtools extends RunBinary {
         }
 
         int ret2=runBinary("bcftools","norm",
+                "-m-any",
                 "-f",reference.fastaFile().toString(),
                 "-o",out2.toString(),
                 "-O","z",
@@ -64,6 +90,7 @@ public class RunBCFtools extends RunBinary {
 
 
         int ret4=runBinary("bcftools","index",
+                "-t",
                 "-f",
                 out.toString());
 
@@ -83,29 +110,39 @@ public class RunBCFtools extends RunBinary {
         }).filter(Optional::isPresent).map(Optional::get);
     }
 
-    public int combineVariantsByChunks(GenomeRef reference,int minQual,Path combined, Stream<Path> variants) throws IOException{
+    public int combineVariantsByChunks(GenomeRef reference,int minQual,Path combined, Stream<Path> variants) throws IOException {
         List<Path> varLst = variants.collect(Collectors.toList());
-        List<List<Path>> partitions=Lists.partition(varLst,Math.min(CHUNK_SIZE,varLst.size()/2));
+        List<List<Path>> partitions = Lists.partition(varLst, Math.min(CHUNK_SIZE, varLst.size() / 2));
 
         final AtomicInteger count = new AtomicInteger(1);
-        Stream<Path> combinedParts = partitions.stream().map( (List<Path> vars) -> {
+        Stream<Path> combinedParts = partitions.stream().map((List<Path> vars) -> {
             int i = count.getAndIncrement();
             try {
                 log.info("=============================================================");
-                log.info(String.format("Merging step %d: Merging %d files",i,vars.size()));
+                log.info(String.format("Merging step %d: Merging %d files", i, vars.size()));
                 log.info("=============================================================");
-                Path tempCombined = File.createTempFile(String.format("LM%03d.",i),".vcf").toPath();
-                Stream<Path> normalized = filterVariants(reference,minQual,vars.stream());
-                mergeVariants(reference,tempCombined,normalized);
+                Path tempCombined = File.createTempFile(String.format("LM%03d.", i), ".vcf").toPath();
+                Stream<Path> normalized = filterVariants(reference, minQual, vars.stream());
+                mergeVariants(reference, tempCombined, normalized);
                 return tempCombined;
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
         });
 
-        log.info("Merging %d chunks",partitions.size());
+        log.info("Merging %d chunks", partitions.size());
 
-        return mergeVariants(reference,combined,combinedParts);
+
+        Path out1 = combined.resolveSibling(combined.getFileName() + ".merge.vcf.gz");
+
+        int ret = mergeVariants(reference, out1, combinedParts);
+        if (ret != 0) {
+            throw new RuntimeException("Merge Variants failed");
+        }
+
+        int ret2=normalizeVariantFinal(reference, combined, out1);
+
+        return ret2;
     }
 
 
