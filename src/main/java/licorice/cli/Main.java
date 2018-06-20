@@ -1,7 +1,13 @@
 package licorice.cli;
 
+import java.io.File;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 
+import licorice.runner.RunBinary;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -28,6 +34,8 @@ public class Main {
 		@Parameter(names = {"-q","--minQual"}, description = "Minimum variant Quality (default=15)", arity = 1,required=false)
 		private int minQual = 15;
 
+		@Parameter(names = {"-c","--maxNonCall"}, description = "Maximum non call rate(default=0.95)", arity = 1,required=false)
+		private double maxNC = 0.95;
 
 		@Parameter(names = {"-t","--no-transpose"}, description = "Do NOT Transpose Matrix",required=false)
 		private boolean notTranspose = false;
@@ -63,13 +71,26 @@ public class Main {
 		public int getMinQual() {
             return minQual;
         }
-    }
+
+		public double getMaxNC() {
+
+			return maxNC;
+		}
+
+	}
 	
-	public void run(String[] argv) {
+	public void run(String[] argv) throws URISyntaxException {
 		Parameters pars = new Parameters();
 		JCommander jc = new JCommander(pars);
 		jc.setProgramName("licorice");
-		
+
+		URL classesRootDirURL = getClass().getProtectionDomain().getCodeSource().getLocation();
+		Path  appRootDir = Paths.get(classesRootDirURL.toURI()).getParent().getParent();
+
+		logger.info(String.format("Licorice Path '%s'",appRootDir));
+
+		RunBinary.setBaseDir(appRootDir);
+
 		try {
 			jc.parse(argv);
 		} catch(ParameterException e) {
@@ -82,6 +103,7 @@ public class Main {
 			Analysis analysis = new Analysis(
 					new SimpleGenomeRef(Paths.get(pars.getReference())),
 					pars.getMinQual(),
+					pars.getMaxNC(),
 					!pars.isNotTranspose(),
 					Paths.get(pars.getOutput()),
 					Paths.get(pars.getInputDir())
@@ -101,7 +123,11 @@ public class Main {
 	
 	public static void main(String[] argv) {
 		Main main = new Main();
-		main.run(argv);
+		try {
+			main.run(argv);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
 
 }

@@ -10,6 +10,8 @@ import licorice.dataframe.DataFrame;
 import licorice.dataframe.MemoryDataFrame;
 import licorice.dataframe.TabulatedPrinter;
 import org.apache.commons.io.FilenameUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 import java.io.File;
@@ -25,20 +27,23 @@ import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 public class Matricifier {
-	private boolean transpose;
-	private double maxFreq = 0.95;
+    private static Logger logger = LoggerFactory.getLogger(Matricifier.class);
+
+    private boolean transpose;
 
 	public Matricifier(boolean transpose) {
 		this.transpose = transpose;
 	}
 
-	public void matricify(Path combinedVariants, Path matrixFile) throws IOException {
+	public void matricify(final double maxNC,final Path combinedVariants, final Path matrixFile) throws IOException {
 		String path = matrixFile.toAbsolutePath().toString();
 		String base = FilenameUtils.removeExtension(path);
 
+        logger.info(String.format("Filtering all variants with No Call Rate > %f",maxNC));
+
 		final Predicate<VariantContext> filterFrequency = ((VariantContext var) -> {
 			double f=var.getNoCallCount()*1.0/var.getNSamples();
-			if (f <= maxFreq) {
+			if (f <= maxNC) {
 				return true;
 			} else {
 				//System.out.println(var.getID() + " NC=" + var.getNoCallCount() + " f=" + f);
@@ -48,9 +53,9 @@ public class Matricifier {
 		final Predicate<VariantContext> filterSNP = ((VariantContext var) ->  !var.emptyID() );
 		final Predicate<VariantContext> filterAll = ((VariantContext var) ->  true );
 
-		printOneColumn(filterSNP,combinedVariants,Paths.get(base + ".SNP_1.txt"));
-		printTowColumns(filterSNP,combinedVariants,Paths.get(base + ".SNP_2.txt"));
-		printSimplified(filterSNP,combinedVariants,Paths.get(base + ".SNP_simple.txt"));
+		printOneColumn(filterSNP.and(filterFrequency),combinedVariants,Paths.get(base + ".SNP_1.txt"));
+		printTowColumns(filterSNP.and(filterFrequency),combinedVariants,Paths.get(base + ".SNP_2.txt"));
+		printSimplified(filterSNP.and(filterFrequency),combinedVariants,Paths.get(base + ".SNP_simple.txt"));
 		printExtended(filterSNP.and(filterFrequency),combinedVariants,Paths.get(base + ".SNP_ext.txt"));
 
 		printOneColumn(filterAll,combinedVariants,Paths.get(base + ".ALL_1.txt"));

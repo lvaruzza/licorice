@@ -30,8 +30,8 @@ public class Analysis {
 
 	private UncaughtExceptionHandler onexception;
 	
-	public Analysis(final GenomeRef reference,final int minQual,boolean transpose,final Path output,final Path variants) throws IOException {
-		this(reference,minQual,transpose,output,VCFUtils.listVCFFiles(ZipUtil.directoryfy(variants)));
+	public Analysis(final GenomeRef reference,final int minQual,double maxNC,boolean transpose,final Path output,final Path variants) throws IOException {
+		this(reference,minQual,maxNC,transpose,output,VCFUtils.listVCFFiles(ZipUtil.directoryfy(variants)));
 	}
 
     private void combineVariantsGATK(final GenomeRef reference,final Stream<Path> variants) {
@@ -50,7 +50,7 @@ public class Analysis {
 		}
 	}
 
-	public Analysis(final GenomeRef reference,final int minQual,boolean transpose,final Path output,final Stream<Path> variants) {
+	public Analysis(final GenomeRef reference,final int minQual,double maxNC,boolean transpose,final Path output,final Stream<Path> variants) {
 		Matricifier mat = new Matricifier(transpose);
 		logger.info("Output file " + output);
 		outputDir = output.toAbsolutePath().getParent();
@@ -70,7 +70,7 @@ public class Analysis {
 			logger.info("Matricifying " + combined.toString());
 			if (progressConsumer!=null) progressConsumer.accept(50);
 			try {
-				mat.matricify(combined, output);
+				mat.matricify(maxNC,combined, output);
 			} catch (IOException e1) {
 				throw new RuntimeException(e1);
 			}

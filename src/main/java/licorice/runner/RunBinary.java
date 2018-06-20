@@ -5,14 +5,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.*;
+import java.nio.file.Path;
 
 public class RunBinary {
     private static Logger log = LoggerFactory.getLogger(RunBinary.class);
 
     private static String baseDir=".";
 
-    public static void setBaseDir(String base) {
-        baseDir = base;
+    public static void setBaseDir(Path base) {
+        baseDir = base.toAbsolutePath().toString();
     }
 
     public String getBinary(String name) {
