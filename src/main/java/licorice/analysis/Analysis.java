@@ -1,7 +1,7 @@
 package licorice.analysis;
 
-import gatkrunner.gatk.GATKFacade;
-import gatkrunner.gatk.VCFUtils;
+import utils.VCFUtils;
+import utils.VCFUtils;
 import licorice.runner.RunBCFtools;
 import org.apache.commons.io.FilenameUtils;
 import org.slf4j.Logger;
@@ -34,11 +34,6 @@ public class Analysis {
 		this(reference,minQual,maxNC,transpose,output,VCFUtils.listVCFFiles(ZipUtil.directoryfy(variants)));
 	}
 
-    private void combineVariantsGATK(final GenomeRef reference,final Stream<Path> variants) {
-        GATKFacade gatk = new GATKFacade();
-        logger.info("Generating " + combined.toString() + " file using GATK");
-        gatk.combineVariants(reference, variants, combined);
-    }
 
     private void combineVariantsBCF(final GenomeRef reference,final int minQual,final Stream<Path> variants) {
         logger.info("Generating " + combined.toString() + " file using bcftools");
@@ -60,7 +55,7 @@ public class Analysis {
 		combined = outputDir.resolve(base + ".vcf.gz");
 		Runnable analysisTask = () -> {
 		    if (useGATK) {
-                combineVariantsGATK(reference,variants);
+                throw new RuntimeException("Deprecated");
             } else {
 		        combineVariantsBCF(reference,minQual,variants);
             }

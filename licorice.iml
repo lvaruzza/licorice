@@ -10,56 +10,13 @@
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
-    <orderEntry type="module" module-name="gatkRunner" />
-    <orderEntry type="library" name="Maven: com.github.samtools:htsjdk:2.15.1" level="project" />
+    <orderEntry type="library" name="Maven: com.github.samtools:htsjdk:2.14.3" level="project" />
     <orderEntry type="library" name="Maven: org.apache.commons:commons-jexl:2.1.1" level="project" />
     <orderEntry type="library" name="Maven: commons-logging:commons-logging:1.1.1" level="project" />
     <orderEntry type="library" name="Maven: org.xerial.snappy:snappy-java:1.1.4" level="project" />
     <orderEntry type="library" name="Maven: org.apache.commons:commons-compress:1.4.1" level="project" />
     <orderEntry type="library" name="Maven: org.tukaani:xz:1.5" level="project" />
     <orderEntry type="library" name="Maven: gov.nih.nlm.ncbi:ngs-java:1.2.4" level="project" />
-    <orderEntry type="library" name="Maven: org.broadinstitute.gatk:gatk-engine:3.7" level="project" />
-    <orderEntry type="library" name="Maven: org.broadinstitute.gatk:gatk-utils:3.7" level="project" />
-    <orderEntry type="library" name="Maven: log4j:log4j:1.2.15" level="project" />
-    <orderEntry type="library" name="Maven: javax.mail:mail:1.4" level="project" />
-    <orderEntry type="library" name="Maven: javax.activation:activation:1.1" level="project" />
-    <orderEntry type="library" name="Maven: colt:colt:1.2.0" level="project" />
-    <orderEntry type="library" name="Maven: concurrent:concurrent:1.3.4" level="project" />
-    <orderEntry type="library" name="Maven: it.unimi.dsi:fastutil:6.5.3" level="project" />
-    <orderEntry type="library" name="Maven: org.reflections:reflections:0.9.9-RC1" level="project" />
-    <orderEntry type="library" name="Maven: org.javassist:javassist:3.16.1-GA" level="project" />
-    <orderEntry type="library" name="Maven: dom4j:dom4j:1.6.1" level="project" />
-    <orderEntry type="library" name="Maven: xml-apis:xml-apis:1.0.b2" level="project" />
-    <orderEntry type="library" name="Maven: org.freemarker:freemarker:2.3.18" level="project" />
-    <orderEntry type="library" name="Maven: commons-lang:commons-lang:2.5" level="project" />
-    <orderEntry type="library" name="Maven: commons-collections:commons-collections:3.2.2" level="project" />
-    <orderEntry type="library" name="Maven: org.apache.commons:commons-math:2.2" level="project" />
-    <orderEntry type="library" name="Maven: org.apache.commons:commons-math3:3.5" level="project" />
-    <orderEntry type="library" name="Maven: net.java.dev.jna:jna:3.2.7" level="project" />
-    <orderEntry type="library" name="Maven: us.levk:drmaa-gridengine:6.2u5" level="project" />
-    <orderEntry type="library" name="Maven: us.levk:drmaa-common:1.0" level="project" />
-    <orderEntry type="library" name="Maven: com.google.code.gson:gson:2.2.2" level="project" />
-    <orderEntry type="library" name="Maven: org.apache.httpcomponents:httpclient:4.1.1" level="project" />
-    <orderEntry type="library" name="Maven: org.apache.httpcomponents:httpcore:4.1" level="project" />
-    <orderEntry type="library" name="Maven: com.google.code.cofoja:cofoja:1.2-20140817" level="project" />
-    <orderEntry type="library" name="Maven: org.ow2.asm:asm-all:5.0.4" level="project" />
-    <orderEntry type="library" name="Maven: net.java.dev.jets3t:jets3t:0.8.1" level="project" />
-    <orderEntry type="library" name="Maven: commons-codec:commons-codec:1.3" level="project" />
-    <orderEntry type="library" name="Maven: commons-httpclient:commons-httpclient:3.1" level="project" />
-    <orderEntry type="library" name="Maven: com.jamesmurty.utils:java-xmlbuilder:0.4" level="project" />
-    <orderEntry type="library" name="Maven: org.simpleframework:simple-xml:2.0.4" level="project" />
-    <orderEntry type="library" name="Maven: stax:stax-api:1.0.1" level="project" />
-    <orderEntry type="library" name="Maven: stax:stax:1.2.0" level="project" />
-    <orderEntry type="library" name="Maven: org.broadinstitute.gatk:gatk-tools-public:3.7" level="project" />
-    <orderEntry type="module-library">
-      <library name="Maven: com.sun:tools:1.4.2">
-        <CLASSES>
-          <root url="jar:///usr/lib/jvm/java-8-oracle/lib/tools.jar!/" />
-        </CLASSES>
-        <JAVADOC />
-        <SOURCES />
-      </library>
-    </orderEntry>
     <orderEntry type="library" name="Maven: commons-io:commons-io:2.5" level="project" />
     <orderEntry type="library" scope="TEST" name="Maven: org.testng:testng:6.9.10" level="project" />
     <orderEntry type="library" scope="TEST" name="Maven: org.beanshell:bsh:2.0b4" level="project" />
@@ -73,6 +30,5 @@
     <orderEntry type="library" name="Maven: com.google.errorprone:error_prone_annotations:2.1.3" level="project" />
     <orderEntry type="library" name="Maven: com.google.j2objc:j2objc-annotations:1.1" level="project" />
     <orderEntry type="library" name="Maven: org.codehaus.mojo:animal-sniffer-annotations:1.14" level="project" />
-    <orderEntry type="library" name="Maven: licorice:licorice:1.2" level="project" />
   </component>
 </module>
