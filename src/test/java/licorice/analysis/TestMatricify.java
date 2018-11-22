@@ -9,7 +9,7 @@ import org.testng.annotations.Test;
 
 public class TestMatricify {
 
-	@Test
+	//@Test
 	public void test() {
 		Matricifier mat = new Matricifier(true);
 		Path output=Paths.get("output.txt");

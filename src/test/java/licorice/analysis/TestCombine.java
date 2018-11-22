@@ -38,7 +38,7 @@ public class TestCombine {
     }
 
 
-    @Test
+    //@Test
     public void testCombineBoth() throws IOException {
         RunBCFtools bcftools = new RunBCFtools();
 

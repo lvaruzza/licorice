@@ -7,7 +7,7 @@ import java.io.File;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertTrue;
 
-@Test
+//@Test
 public class TestRunner {
     public void testRunBinary() {
         RunBinary runner = new RunBinary();
