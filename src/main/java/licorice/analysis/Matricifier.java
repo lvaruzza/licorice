@@ -35,6 +35,7 @@ public class Matricifier {
 		this.transpose = transpose;
 	}
 
+
 	public void matricify(final double maxNC,final Path combinedVariants, final Path matrixFile) throws IOException {
 		String path = matrixFile.toAbsolutePath().toString();
 		String base = FilenameUtils.removeExtension(path);
@@ -53,22 +54,21 @@ public class Matricifier {
 		final Predicate<VariantContext> filterSNP = ((VariantContext var) ->  !var.emptyID() );
 		final Predicate<VariantContext> filterAll = ((VariantContext var) ->  true );
 
-		printOneColumn(filterSNP.and(filterFrequency),combinedVariants,Paths.get(base + ".SNP_1.txt"));
-		printTowColumns(filterSNP.and(filterFrequency),combinedVariants,Paths.get(base + ".SNP_2.txt"));
-		printSimplified(filterSNP.and(filterFrequency),combinedVariants,Paths.get(base + ".SNP_simple.txt"));
-		printExtended(filterSNP.and(filterFrequency),combinedVariants,Paths.get(base + ".SNP_ext.txt"));
 
-		printOneColumn(filterAll,combinedVariants,Paths.get(base + ".ALL_1.txt"));
-		printTowColumns(filterAll,combinedVariants,Paths.get(base + ".ALL_2.txt"));
+        printOneColumn(filterSNP.and(filterFrequency),new PlainVariantsSource(combinedVariants),Paths.get(base + ".SNP_1.txt"));
+		printTowColumns(filterSNP.and(filterFrequency),new PlainVariantsSource(combinedVariants),Paths.get(base + ".SNP_2.txt"));
+		printSimplified(filterSNP.and(filterFrequency),new PlainVariantsSource(combinedVariants),Paths.get(base + ".SNP_simple.txt"));
+		printExtended(filterSNP.and(filterFrequency),new PlainVariantsSource(combinedVariants),Paths.get(base + ".SNP_ext.txt"));
+
+		printOneColumn(filterAll,new PlainVariantsSource(combinedVariants),Paths.get(base + ".ALL_1.txt"));
+		printTowColumns(filterAll,new PlainVariantsSource(combinedVariants),Paths.get(base + ".ALL_2.txt"));
 	}
 
-	public void printOneColumn(Predicate<VariantContext> filter,Path combinedVariants, Path matrixFile) throws IOException {
-		File varFile = combinedVariants.toFile();
-		VCFFileReader reader = new VCFFileReader(varFile,false);
-		List<String> samples = reader.getFileHeader().getSampleNamesInOrder();
+	public void printOneColumn(Predicate<VariantContext> filter,VariantsSource variants, Path matrixFile) throws IOException {
 		DataFrame dt = new MemoryDataFrame();
-		dt.setColNames(samples.stream().collect(Collectors.toList()));
-		for(VariantContext var:reader) {
+		dt.setColNames(variants.samples());
+
+		for(VariantContext var:variants) {
 			if (filter.test(var)) {
 				GenotypesContext gctx = var.getGenotypes();
 
@@ -94,14 +94,11 @@ public class Matricifier {
 		output.close();
 	}
 
-	public void printTowColumns(Predicate<VariantContext> filter,Path combinedVariants, Path matrixFile) throws IOException {
-		File varFile = combinedVariants.toFile();
-		VCFFileReader reader = new VCFFileReader(varFile);
-		List<String> samples = reader.getFileHeader().getSampleNamesInOrder();
+	public void printTowColumns(Predicate<VariantContext> filter,VariantsSource variants, Path matrixFile) throws IOException {
 		DataFrame dt = new MemoryDataFrame();
-		dt.setColNames(samples.stream().collect(Collectors.toList()));
-		
-		for(VariantContext var:reader) {
+        dt.setColNames(variants.samples());
+
+        for(VariantContext var:variants) {
 			if (filter.test(var)) {
 	
 				GenotypesContext gctx = var.getGenotypes();
@@ -126,8 +123,7 @@ public class Matricifier {
 				dt.addRow(name, genolst.stream().map(x -> (x.length >1)  ? x[1] : "." ).collect(Collectors.toList()));
 			}
 		}
-		reader.close();
-		
+
 		TabulatedPrinter output = new TabulatedPrinter(new FileOutputStream(matrixFile.toFile()));
 		if (transpose) {
 			output.printTransposed(dt);
@@ -138,13 +134,10 @@ public class Matricifier {
 	}
 
 
-	public void printSimplified(Predicate<VariantContext> filter,Path combinedVariants, Path matrixFile) throws IOException {
-		File varFile = combinedVariants.toFile();
-		VCFFileReader reader = new VCFFileReader(varFile,false);
-		List<String> samples = reader.getFileHeader().getSampleNamesInOrder();
+	public void printSimplified(Predicate<VariantContext> filter,VariantsSource variants, Path matrixFile) throws IOException {
 		DataFrame dt = new MemoryDataFrame();
-		dt.setColNames(samples.stream().collect(Collectors.toList()));
-		for(VariantContext var:reader) {
+		dt.setColNames(variants.samples());
+		for(VariantContext var:variants) {
 			if (filter.test(var)) {
 				GenotypesContext gctx = var.getGenotypes();
 
@@ -170,13 +163,10 @@ public class Matricifier {
 		output.close();
 	}
 
-	public void printExtended(Predicate<VariantContext> filter, Path combinedVariants, Path matrixFile) throws IOException {
-		File varFile = combinedVariants.toFile();
-		VCFFileReader reader = new VCFFileReader(varFile,false);
-		List<String> samples = reader.getFileHeader().getSampleNamesInOrder();
-		DataFrame dt = new MemoryDataFrame();
-		dt.setColNames(samples.stream().collect(Collectors.toList()));
-		for(VariantContext var:reader) {
+	public void printExtended(Predicate<VariantContext> filter, VariantsSource variants, Path matrixFile) throws IOException {
+        DataFrame dt = new MemoryDataFrame();
+        dt.setColNames(variants.samples());
+        for(VariantContext var:variants) {
 			if (filter.test(var)) {
 				GenotypesContext gctx = var.getGenotypes();
 
