@@ -19,7 +19,7 @@ public class RunBCFtools extends RunBinary {
     private static final int CHUNK_SIZE = 96;
 
     private static Logger log = LoggerFactory.getLogger(RunBinary.class);
-
+    private String mergeOption="id";
 
     public int normalizeVariantFinal(GenomeRef reference,Path out, Path input) {
         log.info(String.format("Post Normalization. Output '%s'",out.toString()));
@@ -186,7 +186,7 @@ public class RunBCFtools extends RunBinary {
                             "-O","v",
                             "--force-samples",
                             "--threads","4",
-                            "-m","both"),
+                            "-m",mergeOption),
                             Arrays.stream(varLst)).toArray(String[]::new));
 
                     if (ret != 0) {

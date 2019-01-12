@@ -4,17 +4,17 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.stream.Stream;
 
-public interface DataFrame {
-	public static interface Row {
+public interface DataFrame<T> {
+	public static interface Row<T> {
 		public String getName();
-		public Stream<Object> stream();
-		public Object get(int j);
+		public Stream<T> stream();
+		public T get(int j);
 	}
 
-	public static interface Column {
+	public static interface Column<T> {
 		public String getName();
-		public Stream<Object> stream();
-		public Object get(int i);
+		public Stream<T> stream();
+		public T get(int i);
 	}
 
 	public int numberOfColumns();
@@ -24,8 +24,8 @@ public interface DataFrame {
 	public Collection<String> getColNames();
 	public String getColName(int index);
 	
-	public void addRow(String colName,Collection<Object> line);
-	public Stream<Row> rowStream();
-	public Iterator<Row> rowIterator();
-	public Stream<Column> columnStream();
+	public void addRow(String colName,Collection<T> line);
+	public Stream<Row<T>> rowStream();
+	public Iterator<Row<T>> rowIterator();
+	public Stream<Column<T>> columnStream();
 }

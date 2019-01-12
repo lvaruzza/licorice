@@ -82,7 +82,14 @@ public class Matricifier {
 				/*System.out.println(String.format("Adding %s: NC:%d filter:%s",name,
                         var.getNoCallCount(),
                         StringUtils.join(var.getFilters(),"|")));*/
-				dt.addRow(name, gts.collect(Collectors.toList()));
+
+				// Filter lines with only No Calls
+				List<String> gtLst =  gts.collect(Collectors.toList());
+				long ncCount = gtLst.stream().filter((String s) -> s.equals("./.")).count();
+				logger.debug(String.format("row '%s': NC count:%d %s",name,ncCount, ncCount>=gtLst.size() ? "(removed)":""));
+				if (ncCount < gtLst.size())
+					dt.addRow(name, gtLst);
+
 			}
 		}
 		TabulatedPrinter output = new TabulatedPrinter(new FileOutputStream(matrixFile.toFile()));

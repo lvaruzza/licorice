@@ -6,7 +6,7 @@ import java.io.OutputStream;
 import java.io.PrintStream;
 import java.util.stream.Collectors;
 
-public class TabulatedPrinter extends DataFramePrinter implements Closeable {
+public class TabulatedPrinter<T> extends DataFramePrinter<T> implements Closeable {
 	private CharSequence sep = "\t";
 	
 	public TabulatedPrinter(OutputStream out) {
@@ -19,7 +19,7 @@ public class TabulatedPrinter extends DataFramePrinter implements Closeable {
 	}
 
 	@Override
-	public void print(DataFrame data) {
+	public void print(DataFrame<T> data) {
 		PrintStream ps = new PrintStream(out);
 		ps.print(sep);
 		ps.println(data.getColNames().stream().collect(Collectors.joining(sep)));
@@ -31,7 +31,7 @@ public class TabulatedPrinter extends DataFramePrinter implements Closeable {
 	}
 
 	@Override
-	public void printTransposed(DataFrame data) {
+	public void printTransposed(DataFrame<T> data) {
 		PrintStream ps = new PrintStream(out);
 		ps.print(sep);
 		ps.println(data.rowStream().map(x -> x.getName()).collect(Collectors.joining(sep)));

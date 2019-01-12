@@ -11,23 +11,23 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
-public class MemoryDataFrame implements DataFrame {
+public class MemoryDataFrame<T> implements DataFrame<T> {
 	
-	private static class MemoryColumn implements DataFrame.Column {
-		private Vector<Object> data;
+	private static class MemoryColumn<T> implements DataFrame.Column<T> {
+		private Vector<T> data;
 		private int column;
 		private String name;
 		
-		private MemoryColumn(MemoryDataFrame df,String name,int column) {
+		private MemoryColumn(MemoryDataFrame<T> df,String name,int column) {
 			this.name = name;
 			this.column=column;
-			data = new Vector<Object>(df.numberOfRows());
+			data = new Vector<T>(df.numberOfRows());
 			data.setSize(df.numberOfRows());
-			Iterator<Row> rows = df.rowIterator();
+			Iterator<Row<T>> rows = df.rowIterator();
 			//System.out.println(String.format("Copying %d rows to column", df.numberOfRows()));
 			
 			for(int j=0;j<df.numberOfRows();j++) {
-				Row row = rows.next();
+				Row<T> row = rows.next();
 				data.set(j, row.get(column));
 			}
 		}
@@ -38,7 +38,7 @@ public class MemoryDataFrame implements DataFrame {
 		}
 
 		@Override
-		public Stream<Object> stream() {
+		public Stream<T> stream() {
 			return data.stream();
 		}
 		
@@ -47,27 +47,27 @@ public class MemoryDataFrame implements DataFrame {
 			return "[C" + column +":" + name + " " + data.stream().map(x->x.toString()).collect(Collectors.joining(" "))   + "]";
 		}
 		
-		public Object get(int i) {
+		public T get(int i) {
 			return data.get(i);
 		}
 	}
-	private static class ColumnSpliterator implements  Spliterator<Column> {
-		private MemoryDataFrame d;
+	private static class ColumnSpliterator<T> implements  Spliterator<Column<T>> {
+		private MemoryDataFrame<T> d;
 		private int index=0;
 		
-		private ColumnSpliterator(MemoryDataFrame dt) {
+		private ColumnSpliterator(MemoryDataFrame<T> dt) {
 			//super(dt.numberOfColumns(), );
 			d=dt;
 		}
 		
 		@Override
-		public boolean tryAdvance(Consumer<? super Column> action) {
-			action.accept(new MemoryColumn(d,d.getColName(index),index));
+		public boolean tryAdvance(Consumer<? super Column<T>> action) {
+			action.accept(new MemoryColumn<T>(d,d.getColName(index),index));
 			return (++index) < d.numberOfColumns();
 		}
 
 		@Override
-		public Spliterator<Column> trySplit() {
+		public Spliterator<Column<T>> trySplit() {
 			return this;
 		}
 
@@ -83,13 +83,13 @@ public class MemoryDataFrame implements DataFrame {
 				
 	}
 	
-	private static class MemoryRow implements DataFrame.Row {
+	private static class MemoryRow<T> implements DataFrame.Row<T>{
 		private String name;
-		private Vector<Object> data;
+		private Vector<T> data;
 		
-		private MemoryRow(String name,Collection<Object> row) {
+		private MemoryRow(String name,Collection<T> row) {
 			this.name = name;
-			this.data = new Vector<Object>(row);
+			this.data = new Vector<T>(row);
 		}
 
 		@Override
@@ -98,21 +98,21 @@ public class MemoryDataFrame implements DataFrame {
 		}
 
 		@Override
-		public Stream<Object> stream() {
+		public Stream<T> stream() {
 			return data.stream();
 		}
 
 		@Override
-		public Object get(int j) {
+		public T get(int j) {
 			return data.get(j);
 		}
 	}
 	
-	private List<Row> data;
+	private List<Row<T>> data;
 	private Vector<String> colNames;
 	
  	public MemoryDataFrame() {
-		data=new LinkedList<Row>();
+		data=new LinkedList<Row<T>>();
 	}
 	
 	@Override
@@ -121,13 +121,13 @@ public class MemoryDataFrame implements DataFrame {
 	}
 
 	@Override
-	public void addRow(String name,Collection<Object> line) {
+	public void addRow(String name,Collection<T> line) {
 		data.add(new MemoryRow(name,line));
 		
 	}
 
 	@Override
-	public Stream<Row> rowStream() {
+	public Stream<Row<T>> rowStream() {
 		return data.stream();
 	}
 
@@ -137,7 +137,7 @@ public class MemoryDataFrame implements DataFrame {
 	}
 
 	@Override
-	public Stream<Column> columnStream() {
+	public Stream<Column<T>> columnStream() {
 		return StreamSupport.stream(new ColumnSpliterator(this), false);
 	}
 
@@ -157,7 +157,7 @@ public class MemoryDataFrame implements DataFrame {
 	}
 
 	@Override
-	public Iterator<Row> rowIterator() {
+	public Iterator<Row<T>> rowIterator() {
 		return data.iterator();
 	}
 
