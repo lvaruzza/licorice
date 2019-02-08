@@ -40,6 +40,9 @@ public class Main {
 		@Parameter(names = {"-t","--no-transpose"}, description = "Do NOT Transpose Matrix",required=false)
 		private boolean notTranspose = false;
 
+		@Parameter(names = {"-f","--output-format"}, description = "Output Format (valid options: 1,2,S,X,N)",required=false)
+		private String outputFormatName = "default";
+
 		public String getInputDir() {
 			return inputDir;
 		}
@@ -77,6 +80,9 @@ public class Main {
 			return maxNC;
 		}
 
+		public String getOutputFormatName() {
+			return outputFormatName;
+		}
 	}
 	
 	public void run(String[] argv) throws URISyntaxException {
@@ -101,6 +107,7 @@ public class Main {
 		
 		try {
 			Analysis analysis = new Analysis(
+					pars.getOutputFormatName(),
 					new SimpleGenomeRef(Paths.get(pars.getReference())),
 					pars.getMinQual(),
 					pars.getMaxNC(),

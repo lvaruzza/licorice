@@ -29,10 +29,10 @@ import java.util.stream.StreamSupport;
 public class Matricifier {
     private static Logger logger = LoggerFactory.getLogger(Matricifier.class);
 
-    private boolean transpose;
+	private OutputFormat outfmt;
 
-	public Matricifier(boolean transpose) {
-		this.transpose = transpose;
+	public Matricifier(OutputFormat outfmt) {
+		this.outfmt = outfmt;
 	}
 
 
@@ -55,151 +55,8 @@ public class Matricifier {
 		final Predicate<VariantContext> filterAll = ((VariantContext var) ->  true );
 
 
-        printOneColumn(filterSNP.and(filterFrequency),new PlainVariantsSource(combinedVariants),Paths.get(base + ".SNP_1.txt"));
-		printTowColumns(filterSNP.and(filterFrequency),new PlainVariantsSource(combinedVariants),Paths.get(base + ".SNP_2.txt"));
-		printSimplified(filterSNP.and(filterFrequency),new PlainVariantsSource(combinedVariants),Paths.get(base + ".SNP_simple.txt"));
-		printExtended(filterSNP.and(filterFrequency),new PlainVariantsSource(combinedVariants),Paths.get(base + ".SNP_ext.txt"));
-
-		printOneColumn(filterAll,new PlainVariantsSource(combinedVariants),Paths.get(base + ".ALL_1.txt"));
-		printTowColumns(filterAll,new PlainVariantsSource(combinedVariants),Paths.get(base + ".ALL_2.txt"));
-	}
-
-	public void printOneColumn(Predicate<VariantContext> filter,VariantsSource variants, Path matrixFile) throws IOException {
-		DataFrame dt = new MemoryDataFrame();
-		dt.setColNames(variants.samples());
-
-		for(VariantContext var:variants) {
-			if (filter.test(var)) {
-				GenotypesContext gctx = var.getGenotypes();
-
-				Stream<String> gts = StreamSupport.stream(gctx.iterateInSampleNameOrder().spliterator(), false)
-						.map(gt -> gt.getGenotypeString());
-
-				String name = var.getID().equals(".")
-						? var.getContig() + ":" + Integer.toString(var.getStart())
-						: var.getID();
-
-				/*System.out.println(String.format("Adding %s: NC:%d filter:%s",name,
-                        var.getNoCallCount(),
-                        StringUtils.join(var.getFilters(),"|")));*/
-
-				// Filter lines with only No Calls
-				List<String> gtLst =  gts.collect(Collectors.toList());
-				long ncCount = gtLst.stream().filter((String s) -> s.equals("./.")).count();
-				logger.debug(String.format("row '%s': NC count:%d %s",name,ncCount, ncCount>=gtLst.size() ? "(removed)":""));
-				if (ncCount < gtLst.size())
-					dt.addRow(name, gtLst);
-
-			}
-		}
-		TabulatedPrinter output = new TabulatedPrinter(new FileOutputStream(matrixFile.toFile()));
-		if(transpose) {
-			output.printTransposed(dt);
-		} else {
-			output.print(dt);
-		}
-		output.close();
-	}
-
-	public void printTowColumns(Predicate<VariantContext> filter,VariantsSource variants, Path matrixFile) throws IOException {
-		DataFrame dt = new MemoryDataFrame();
-        dt.setColNames(variants.samples());
-
-        for(VariantContext var:variants) {
-			if (filter.test(var)) {
-	
-				GenotypesContext gctx = var.getGenotypes();
-				List<String[]> genolst = new LinkedList<String[]>();
-				
-				for( Genotype gt: gctx.iterateInSampleNameOrder()) {
-					int n=gt.getPloidy();
-					String[] as=new String[n];
-					int i=0;
-					for(Allele a:gt.getAlleles()) {
-						as[i++]=a.isNoCall() ? "." /*var.getReference().getBaseString()*/ : a.getDisplayString();
-					}
-					genolst.add(as);
-					
-				}
-				
-				String name=var.getID().equals(".") 
-						? var.getContig() + ":" + Integer.toString(var.getStart())
-						: var.getID();
-	
-				dt.addRow(name, genolst.stream().map(x -> x[0]).collect(Collectors.toList()));
-				dt.addRow(name, genolst.stream().map(x -> (x.length >1)  ? x[1] : "." ).collect(Collectors.toList()));
-			}
-		}
-
-		TabulatedPrinter output = new TabulatedPrinter(new FileOutputStream(matrixFile.toFile()));
-		if (transpose) {
-			output.printTransposed(dt);
-		} else {
-			output.print(dt);
-		}
-		output.close();
-	}
-
-
-	public void printSimplified(Predicate<VariantContext> filter,VariantsSource variants, Path matrixFile) throws IOException {
-		DataFrame dt = new MemoryDataFrame();
-		dt.setColNames(variants.samples());
-		for(VariantContext var:variants) {
-			if (filter.test(var)) {
-				GenotypesContext gctx = var.getGenotypes();
-
-				Stream<String> gts = StreamSupport.stream(gctx.iterateInSampleNameOrder().spliterator(), false)
-						.map((Genotype gt) -> gt.isNoCall() ?  "NOCALL" : (gt.isHom() ? "HOM" : "HET"));
-
-				String name = var.getID().equals(".")
-						? var.getContig() + ":" + Integer.toString(var.getStart())
-						: var.getID();
-
-				/*System.out.println(String.format("Adding %s: NC:%d filter:%s",name,
-                        var.getNoCallCount(),
-                        StringUtils.join(var.getFilters(),"|")));*/
-				dt.addRow(name, gts.collect(Collectors.toList()));
-			}
-		}
-		TabulatedPrinter output = new TabulatedPrinter(new FileOutputStream(matrixFile.toFile()));
-		if(transpose) {
-			output.printTransposed(dt);
-		} else {
-			output.print(dt);
-		}
-		output.close();
-	}
-
-	public void printExtended(Predicate<VariantContext> filter, VariantsSource variants, Path matrixFile) throws IOException {
-        DataFrame dt = new MemoryDataFrame();
-        dt.setColNames(variants.samples());
-        for(VariantContext var:variants) {
-			if (filter.test(var)) {
-				GenotypesContext gctx = var.getGenotypes();
-
-				Stream<String> gts = StreamSupport.stream(gctx.iterateInSampleNameOrder().spliterator(), false)
-						.map((Genotype gt) -> gt.isNoCall() ?  "" : (gt.isHom() ? "HOM" : "HET") + ":" +
-								(gt.isHomRef() ? "REF:" : "CALL:") +
-								gt.getGenotypeString()
-								+ ":Q" + gt.getGQ());
-
-				String name = var.getID().equals(".")
-						? var.getContig() + ":" + Integer.toString(var.getStart())
-						: var.getID();
-
-				/*System.out.println(String.format("Adding %s: NC:%d filter:%s",name,
-                        var.getNoCallCount(),
-                        StringUtils.join(var.getFilters(),"|")));*/
-				dt.addRow(name + ":" + var.getContig() +":" + var.getStart()  , gts.collect(Collectors.toList()));
-			}
-		}
-		TabulatedPrinter output = new TabulatedPrinter(new FileOutputStream(matrixFile.toFile()));
-		if(transpose) {
-			output.printTransposed(dt);
-		} else {
-			output.print(dt);
-		}
-		output.close();
+		outfmt.print(filterSNP.and(filterFrequency),new PlainVariantsSource(combinedVariants),Paths.get(base + ".SNP.txt"));
+		outfmt.print(filterAll,new PlainVariantsSource(combinedVariants),Paths.get(base + ".ALL.txt"));
 	}
 
 

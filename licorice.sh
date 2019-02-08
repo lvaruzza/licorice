@@ -1,8 +1,10 @@
-if [ "project.version" -ot "pom.xml" ]; then
+D=`dirname $0`
+
+if [ "$D/project.version" -ot "$D/pom.xml" ]; then
   echo updating project.version
-  mvn help:evaluate -Dexpression=project.version -q -DforceStdout > project.version 2>/dev/null
+  mvn help:evaluate -Dexpression=project.version -q -DforceStdout > $D/project.version 2>/dev/null
 fi
 
-VERSION=`cat project.version`
-java -jar target/licorice-$VERSION-jar-with-dependencies.jar $*
+VERSION=`cat $D/project.version`
+java -jar $D/target/licorice-$VERSION-jar-with-dependencies.jar $*
 

@@ -1,7 +1,6 @@
 package licorice.analysis;
 
 import utils.VCFUtils;
-import utils.VCFUtils;
 import licorice.runner.RunBCFtools;
 import org.apache.commons.io.FilenameUtils;
 import org.slf4j.Logger;
@@ -30,8 +29,8 @@ public class Analysis {
 
 	private UncaughtExceptionHandler onexception;
 	
-	public Analysis(final GenomeRef reference,final int minQual,double maxNC,boolean transpose,final Path output,final Path variants) throws IOException {
-		this(reference,minQual,maxNC,transpose,output,VCFUtils.listVCFFiles(ZipUtil.directoryfy(variants)));
+	public Analysis(final String outputFormatName,final GenomeRef reference,final int minQual,double maxNC,boolean transpose,final Path output,final Path variants) throws IOException {
+		this(outputFormatName,reference,minQual,maxNC,transpose,output,VCFUtils.listVCFFiles(ZipUtil.directoryfy(variants)));
 	}
 
 
@@ -45,8 +44,10 @@ public class Analysis {
 		}
 	}
 
-	public Analysis(final GenomeRef reference,final int minQual,double maxNC,boolean transpose,final Path output,final Stream<Path> variants) {
-		Matricifier mat = new Matricifier(transpose);
+	public Analysis(final String outputFormatName,final GenomeRef reference,final int minQual,double maxNC,boolean transpose,final Path output,final Stream<Path> variants) {
+		OutputFormat outFmt = OutputFormat.getFormat(outputFormatName,transpose);
+
+		Matricifier mat = new Matricifier(outFmt);
 		logger.info("Output file " + output);
 		outputDir = output.toAbsolutePath().getParent();
 		base = FilenameUtils.removeExtension(output.toString());
