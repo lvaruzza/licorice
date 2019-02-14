@@ -11,7 +11,7 @@ public class TestMatricify {
 
 	//@Test
 	public void test() {
-		Matricifier mat = new Matricifier(true);
+		Matricifier mat = new Matricifier(OutputFormat.getFormat("1",true));
 		Path output=Paths.get("output.txt");
 		try {
 			mat.matricify(1.0,Paths.get("data/combined.vcf"), output);

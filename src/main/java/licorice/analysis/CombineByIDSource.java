@@ -55,7 +55,7 @@ public class CombineByIDSource implements VariantsSource {
     }
 
     @Override
-    public Collection<String> samples() {
+    public List<String> samples() {
         List<String> samples = reader.getFileHeader().getSampleNamesInOrder();
         return samples;
     }

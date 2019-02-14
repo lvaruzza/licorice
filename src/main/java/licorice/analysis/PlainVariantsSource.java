@@ -5,9 +5,7 @@ import htsjdk.variant.vcf.VCFFileReader;
 
 import java.io.File;
 import java.nio.file.Path;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 
 public class PlainVariantsSource implements VariantsSource {
 
@@ -19,8 +17,9 @@ public class PlainVariantsSource implements VariantsSource {
     }
 
     @Override
-    public Collection<String> samples() {
-        List<String> samples = reader.getFileHeader().getSampleNamesInOrder();
+    public List<String> samples() {
+        List<String> samples  = new ArrayList<String>();
+        samples.addAll(reader.getFileHeader().getSampleNamesInOrder());
         return samples;
     }
 

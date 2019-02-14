@@ -34,7 +34,12 @@ public class NoStdFormat extends OutputFormat {
     @Override
     public void print(Predicate<VariantContext> filter, VariantsSource variants, Path matrixFile) throws IOException {
         DataFrame dt = new MemoryDataFrame();
-        dt.setColNames(variants.samples());
+
+        // Add top header
+        List<String> header =  variants.samples();
+        header.add(0,"pos");
+        header.add(0,"chr");
+        dt.setColNames(header);
 
         for(VariantContext var:variants) {
             if (filter.test(var)) {
@@ -42,18 +47,23 @@ public class NoStdFormat extends OutputFormat {
 
                 Stream<String> gts = StreamSupport.stream(gctx.iterateInSampleNameOrder().spliterator(), false)
                         .map(gt -> {
-                            List<Allele> as = gt.getAlleles();
-                            String a = as.get(0).getBaseString();
-                            String b = as.get(1).getBaseString();
-                            if ((a.length() + b.length() > 2) || a == "." || b == ".") {
-                                return gt.getGenotypeString();
+                            if (gt != null) {
+                                List<Allele> as = gt.getAlleles();
+                                String a = as.get(0).getBaseString();
+                                String b = as.get(1).getBaseString();
+                                if ((a.length() + b.length() > 2) || a == "." || b == ".") {
+                                    return gt.getGenotypeString();
+                                }
+                                return a + b;
+                            } else {
+                                return "INVALID";
                             }
-                            return a + b;
                         });
 
                 String name = var.getID().equals(".")
-                        ? var.getContig() + ":" + Integer.toString(var.getStart())
+                        ? "novel-" + var.getContig() + "-" + var.getStart()
                         : var.getID();
+
 
 				/*System.out.println(String.format("Adding %s: NC:%d filter:%s",name,
                         var.getNoCallCount(),
@@ -63,6 +73,8 @@ public class NoStdFormat extends OutputFormat {
                 List<String> gtLst =  gts.collect(Collectors.toList());
                 long ncCount = gtLst.stream().filter((String s) -> s.equals("./.")).count();
                 logger.debug(String.format("row '%s': NC count:%d %s",name,ncCount, ncCount>=gtLst.size() ? "(removed)":""));
+                gtLst.add(0,Integer.toString(var.getStart()));
+                gtLst.add(0,var.getContig());
                 if (ncCount < gtLst.size())
                     dt.addRow(name, gtLst);
 

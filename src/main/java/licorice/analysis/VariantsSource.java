@@ -2,9 +2,8 @@ package licorice.analysis;
 
 import htsjdk.variant.variantcontext.VariantContext;
 
-import java.util.Collection;
-import java.util.Iterator;
+import java.util.List;
 
 public interface VariantsSource extends Iterable<VariantContext>{
-    Collection<String> samples();
+    List<String> samples();
 }
