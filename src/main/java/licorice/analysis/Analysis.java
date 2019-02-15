@@ -28,9 +28,12 @@ public class Analysis {
     private boolean useGATK = false;
 
 	private UncaughtExceptionHandler onexception;
-	
+
 	public Analysis(final String outputFormatName,final GenomeRef reference,final int minQual,double maxNC,boolean transpose,final Path output,final Path variants) throws IOException {
-		this(outputFormatName,reference,minQual,maxNC,transpose,output,VCFUtils.listVCFFiles(ZipUtil.directoryfy(variants)));
+		this(OutputFormat.getFormat(outputFormatName,transpose),reference,minQual,maxNC,output,VCFUtils.listVCFFiles(ZipUtil.directoryfy(variants)));
+	}
+	public Analysis(final OutputFormat outputFormat,final GenomeRef reference,final int minQual,double maxNC,final Path output,final Path variants) throws IOException {
+		this(outputFormat,reference,minQual,maxNC,output,VCFUtils.listVCFFiles(ZipUtil.directoryfy(variants)));
 	}
 
 
@@ -44,8 +47,7 @@ public class Analysis {
 		}
 	}
 
-	public Analysis(final String outputFormatName,final GenomeRef reference,final int minQual,double maxNC,boolean transpose,final Path output,final Stream<Path> variants) {
-		OutputFormat outFmt = OutputFormat.getFormat(outputFormatName,transpose);
+	public Analysis(final OutputFormat outFmt,final GenomeRef reference,final int minQual,double maxNC,final Path output,final Stream<Path> variants) {
 
 		Matricifier mat = new Matricifier(outFmt);
 		logger.info("Output file " + output);

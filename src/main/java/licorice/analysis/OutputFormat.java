@@ -13,7 +13,37 @@ public abstract class OutputFormat {
 
     private static Logger logger = LoggerFactory.getLogger(OutputFormat.class);
 
-    enum OutputFormats {DEFAULT,ONE_COLUMN,TWO_COLUMNS,EXTENDED,SIMPLE,NOSTD}
+    public static String[] listFormats() {
+        return new String[]{"One Column","Two Columns","Simple","Without Bar","Extended"};
+    }
+
+    enum OutputFormats {
+        DEFAULT(0),ONE_COLUMN(0),TWO_COLUMNS(1),NOSTD(2),SIMPLE(3),EXTENDED(4);
+
+        private int id;
+
+        OutputFormats(int id) {
+            this.id = id;
+        }
+    }
+
+
+    public static OutputFormat getFormat(int selectedIndex,boolean transpose) {
+        switch(selectedIndex) {
+            case 0:
+                return new OneColumnFormat(transpose);
+            case 1:
+                return new TwoColumnsFormat(transpose);
+            case 2:
+                return new NoStdFormat(transpose);
+            case 3:
+                return new SimplifiedFormat(transpose);
+            case 4:
+                return new ExtendedFormat(transpose);
+            default:
+                return new OneColumnFormat(transpose);
+        }
+    }
 
 
     static OutputFormat getFormat(String fmtName, boolean transpose) {
