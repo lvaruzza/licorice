@@ -23,7 +23,7 @@ public class OneColumnFormat extends OutputFormat {
     private static Logger logger = LoggerFactory.getLogger(OneColumnFormat.class);
 
     public OneColumnFormat(boolean transpose)  {
-        super(transpose);
+        super(OutputFormats.ONE_COLUMN,transpose);
     }
 
     @Override

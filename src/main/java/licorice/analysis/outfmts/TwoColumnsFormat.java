@@ -24,7 +24,7 @@ public class TwoColumnsFormat extends OutputFormat {
     private static Logger logger = LoggerFactory.getLogger(TwoColumnsFormat.class);
 
     public TwoColumnsFormat(boolean transpose)  {
-        super(transpose);
+        super(OutputFormats.TWO_COLUMNS,transpose);
     }
 
     @Override

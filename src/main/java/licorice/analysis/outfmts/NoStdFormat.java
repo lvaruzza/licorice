@@ -28,7 +28,7 @@ public class NoStdFormat extends OutputFormat {
     private static Logger logger = LoggerFactory.getLogger(NoStdFormat.class);
 
     public NoStdFormat(boolean transpose)  {
-        super(transpose);
+        super(OutputFormats.NOSTD,transpose);
     }
 
     @Override

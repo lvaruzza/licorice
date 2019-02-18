@@ -23,7 +23,7 @@ public class ExtendedFormat extends OutputFormat {
     private static Logger logger = LoggerFactory.getLogger(ExtendedFormat.class);
 
     public ExtendedFormat(boolean transpose)  {
-        super(transpose);
+        super(OutputFormats.EXTENDED,transpose);
     }
 
     @Override

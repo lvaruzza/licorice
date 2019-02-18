@@ -17,13 +17,18 @@ public abstract class OutputFormat {
         return new String[]{"One Column","Two Columns","Simple","Without Bar","Extended"};
     }
 
-    enum OutputFormats {
-        DEFAULT(0),ONE_COLUMN(0),TWO_COLUMNS(1),NOSTD(2),SIMPLE(3),EXTENDED(4);
+    public enum OutputFormats {
+        DEFAULT(0,"1"),ONE_COLUMN(0,"1"),TWO_COLUMNS(1,"2"),NOSTD(2,"N"),SIMPLE(3,"S"),EXTENDED(4,"X");
 
         private int id;
-
-        OutputFormats(int id) {
+        private String ext;
+        OutputFormats(int id, String extension) {
             this.id = id;
+            this.ext = extension;
+        }
+
+        public String getExt() {
+            return this.ext;
         }
     }
 
@@ -89,11 +94,16 @@ public abstract class OutputFormat {
     }
 
     protected boolean transpose;
+    private OutputFormats format;
 
-
-    public OutputFormat(boolean transpose) {
+    public OutputFormat(OutputFormats format,boolean transpose) {
         this.transpose = transpose;
+        this.format = format;
         logger.info(String.format("Using output format '%s'",this.getClass().getSimpleName()));
+    }
+
+    public String getExt() {
+        return format.getExt();
     }
 
     abstract public void print(Predicate<VariantContext> filter, VariantsSource variants, Path matrixFile) throws IOException;

@@ -1,10 +1,15 @@
 D=`dirname $0`
+PV=$D/project.version
 
-if [ "$D/project.version" -ot "$D/pom.xml" ]; then
-  echo updating project.version
-  mvn help:evaluate -Dexpression=project.version -q -DforceStdout > $D/project.version 2>/dev/null
+echo $PV
+
+if [ "PV" -ot "$D/pom.xml" ]; then
+  echo updating $PV
+  pushd $D
+  mvn help:evaluate -Dexpression=project.version -q -DforceStdout > $PV 2>/dev/null
+  popd
 fi
 
-VERSION=`cat $D/project.version`
+VERSION=`cat $PV`
 java -jar $D/target/licorice-$VERSION-jar-with-dependencies.jar $*
 

@@ -55,7 +55,7 @@ public class Matricifier {
 		final Predicate<VariantContext> filterAll = ((VariantContext var) ->  true );
 
 
-		outfmt.print(filterSNP.and(filterFrequency),new PlainVariantsSource(combinedVariants),Paths.get(base + ".SNP.txt"));
+		outfmt.print(filterSNP.and(filterFrequency),new PlainVariantsSource(combinedVariants),Paths.get(base + "." + outfmt.getExt() + ".SNP.txt"));
 		outfmt.print(filterAll,new PlainVariantsSource(combinedVariants),Paths.get(base + ".ALL.txt"));
 	}
 
