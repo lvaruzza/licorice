@@ -51,7 +51,7 @@ public abstract class OutputFormat {
     }
 
 
-    static OutputFormat getFormat(String fmtName, boolean transpose) {
+    public static OutputFormat getFormat(String fmtName, boolean transpose) {
         switch(fmtName.toUpperCase()) {
             case "TWO_COLUMNS":
             case "TWOCOLUMNS":

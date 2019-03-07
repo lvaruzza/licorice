@@ -55,7 +55,7 @@ public class OneColumnFormat extends OutputFormat {
 
             }
         }
-        TabulatedPrinter output = new TabulatedPrinter(new FileOutputStream(matrixFile.toFile()));
+        TabulatedPrinter output = new TabulatedPrinter(new FileOutputStream(matrixFile.toFile()), x->x);
         if(transpose) {
             output.printTransposed(dt);
         } else {

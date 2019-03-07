@@ -80,7 +80,7 @@ public class NoStdFormat extends OutputFormat {
 
             }
         }
-        TabulatedPrinter output = new TabulatedPrinter(new FileOutputStream(matrixFile.toFile()));
+        TabulatedPrinter output = new TabulatedPrinter(new FileOutputStream(matrixFile.toFile()), x -> String.format("\"%s\"",x));
         if(transpose) {
             output.printTransposed(dt);
         } else {

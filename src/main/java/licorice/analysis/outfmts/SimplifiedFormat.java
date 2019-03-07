@@ -47,7 +47,7 @@ public class SimplifiedFormat extends OutputFormat {
                 dt.addRow(name, gts.collect(Collectors.toList()));
             }
         }
-        TabulatedPrinter output = new TabulatedPrinter(new FileOutputStream(matrixFile.toFile()));
+        TabulatedPrinter output = new TabulatedPrinter(new FileOutputStream(matrixFile.toFile()),x->x);
         if(transpose) {
             output.printTransposed(dt);
         } else {

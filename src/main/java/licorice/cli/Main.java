@@ -1,12 +1,13 @@
 package licorice.cli;
 
-import java.io.File;
-import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.List;
+import java.util.stream.Stream;
 
+import licorice.analysis.OutputFormat;
 import licorice.runner.RunBinary;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,14 +17,15 @@ import com.beust.jcommander.Parameter;
 import com.beust.jcommander.ParameterException;
 
 import licorice.analysis.Analysis;
+import utils.FilesSource;
 import utils.reference.SimpleGenomeRef;
 
 public class Main {
 	private static Logger logger = LoggerFactory.getLogger(Main.class);
 	
 	public static class Parameters {
-		@Parameter(names = {"-i","--input"}, description = "Directory or ZIP  with vcf files", arity = 1,required=true)
-		private String inputDir;
+		@Parameter(names = {"-i","--input"}, description = "Directory or ZIP  with vcf files", variableArity = true,required=true)
+		private List<String> inputDir;
 
 		@Parameter(names = {"-r","--reference"}, description = "Reference Genome", arity = 1,required=true)
 		private String reference;
@@ -43,11 +45,11 @@ public class Main {
 		@Parameter(names = {"-f","--output-format"}, description = "Output Format (valid options: 1,2,S,X,N)",required=false)
 		private String outputFormatName = "default";
 
-		public String getInputDir() {
+		public List<String> getInputDir() {
 			return inputDir;
 		}
 
-		public void setInputDir(String inputDir) {
+		public void setInputDir(List<String> inputDir) {
 			this.inputDir = inputDir;
 		}
 
@@ -104,16 +106,20 @@ public class Main {
 			jc.usage();
 			System.exit(-1);
 		}
-		
+
+
+
 		try {
+
+			Stream<Path> source = new FilesSource(pars.getInputDir()).stream();
+
 			Analysis analysis = new Analysis(
-					pars.getOutputFormatName(),
+					OutputFormat.getFormat(pars.getOutputFormatName(),!pars.isNotTranspose()),
 					new SimpleGenomeRef(Paths.get(pars.getReference())),
 					pars.getMinQual(),
 					pars.getMaxNC(),
-					!pars.isNotTranspose(),
 					Paths.get(pars.getOutput()),
-					Paths.get(pars.getInputDir())
+					source
 				);
 			
 			analysis.start();
@@ -127,7 +133,8 @@ public class Main {
 		}
 		
 	}
-	
+
+
 	public static void main(String[] argv) {
 		Main main = new Main();
 		try {

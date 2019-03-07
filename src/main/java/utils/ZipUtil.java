@@ -41,14 +41,18 @@ public class ZipUtil {
 		zf.close();
 	}
 	
-	public static Path directoryfy(Path input) throws IOException {
-		if (isZip(input)) {
-			Path tempDir =  Files.createTempDirectory(Paths.get("."),"zipfile");
-			ZipUtil.unzip(input, tempDir);
-			FileUtils.forceDeleteOnExit(tempDir.toFile());
-			return tempDir;
-		} else {
-			return input;
+	public static Path directoryfy(Path input)  {
+		try {
+			if (isZip(input)) {
+				Path tempDir = Files.createTempDirectory(Paths.get("."), "zipfile");
+				ZipUtil.unzip(input, tempDir);
+				FileUtils.forceDeleteOnExit(tempDir.toFile());
+				return tempDir;
+			} else {
+				return input;
+			}
+		} catch(IOException e) {
+			throw new RuntimeException(e);
 		}
 	}
 }

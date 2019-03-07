@@ -22,7 +22,7 @@ import java.util.stream.Stream;
 public class VCFUtils {
 	private static Logger logger = LoggerFactory.getLogger(VCFUtils.class);
 	
-	public static Stream<Path> listVCFFiles(Path variantsDir) throws IOException {
+	public static Stream<Path> listVCFFiles(Path variantsDir)  {
 		PathMatcher vcfMatcher = FileSystems.getDefault().getPathMatcher("glob:*.{vcf,vcf.gz,bcf}");
 		logger.info(String.format("Looking for variants in '%s'", variantsDir.toString()));
 		final  Stream.Builder<Path> builder = Stream.builder();
@@ -33,17 +33,20 @@ public class VCFUtils {
 		    	;
 		*/
 
-		Files.walkFileTree(variantsDir,new SimpleFileVisitor<Path>() {
-            @Override
-            public FileVisitResult visitFile(Path file, BasicFileAttributes attrs)
-                    throws IOException
-            {
-                if (vcfMatcher.matches(file.getFileName())) builder.accept(file);
-                return FileVisitResult.CONTINUE;
-            }
-		});
+		try {
+			Files.walkFileTree(variantsDir, new SimpleFileVisitor<Path>() {
+				@Override
+				public FileVisitResult visitFile(Path file, BasicFileAttributes attrs)
+						throws IOException {
+					if (vcfMatcher.matches(file.getFileName())) builder.accept(file);
+					return FileVisitResult.CONTINUE;
+				}
+			});
 
-		return builder.build();
+			return builder.build();
+		} catch(IOException e) {
+			throw  new RuntimeException(e);
+		}
 	}
 
 	public static String getSampleName(Path path) {

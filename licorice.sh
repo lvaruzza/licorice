@@ -11,5 +11,5 @@ if [ "PV" -ot "$D/pom.xml" ]; then
 fi
 
 VERSION=`cat $PV`
-java -jar $D/target/licorice-$VERSION-jar-with-dependencies.jar $*
+java -Xmx12g -jar $D/target/licorice-$VERSION-jar-with-dependencies.jar $*
 

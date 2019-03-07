@@ -7,6 +7,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import utils.ZipUtil;
 import utils.reference.GenomeRef;
+import utils.reference.SimpleGenomeRef;
 
 import java.io.IOException;
 import java.lang.Thread.UncaughtExceptionHandler;
@@ -29,23 +30,14 @@ public class Analysis {
 
 	private UncaughtExceptionHandler onexception;
 
-	public Analysis(final String outputFormatName,final GenomeRef reference,final int minQual,double maxNC,boolean transpose,final Path output,final Path variants) throws IOException {
+	/*public Analysis(final String outputFormatName,final GenomeRef reference,final int minQual,double maxNC,boolean transpose,final Path output,final Path variants) throws IOException {
 		this(OutputFormat.getFormat(outputFormatName,transpose),reference,minQual,maxNC,output,VCFUtils.listVCFFiles(ZipUtil.directoryfy(variants)));
 	}
+
 	public Analysis(final OutputFormat outputFormat,final GenomeRef reference,final int minQual,double maxNC,final Path output,final Path variants) throws IOException {
 		this(outputFormat,reference,minQual,maxNC,output,VCFUtils.listVCFFiles(ZipUtil.directoryfy(variants)));
-	}
+	}*/
 
-
-    private void combineVariantsBCF(final GenomeRef reference,final int minQual,final Stream<Path> variants) {
-        logger.info("Generating " + combined.toString() + " file using bcftools");
-        RunBCFtools runner = new RunBCFtools();
-		try {
-			runner.combineVariantsByChunks(reference,minQual,combined,variants);
-		} catch (IOException e) {
-			throw new RuntimeException(e);
-		}
-	}
 
 	public Analysis(final OutputFormat outFmt,final GenomeRef reference,final int minQual,double maxNC,final Path output,final Stream<Path> variants) {
 
@@ -86,7 +78,19 @@ public class Analysis {
 		if (onexception != null)
 			thread.setUncaughtExceptionHandler(onexception);
 	}
-	
+
+
+	private void combineVariantsBCF(final GenomeRef reference,final int minQual,final Stream<Path> variants) {
+		logger.info("Generating " + combined.toString() + " file using bcftools");
+		RunBCFtools runner = new RunBCFtools();
+		try {
+			runner.combineVariantsByChunks(reference,minQual,combined,variants);
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+
 	public void start() {
 		thread.start();
 	}

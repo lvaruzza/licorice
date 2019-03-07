@@ -50,7 +50,7 @@ public class ExtendedFormat extends OutputFormat {
                 dt.addRow(name + ":" + var.getContig() +":" + var.getStart()  , gts.collect(Collectors.toList()));
             }
         }
-        TabulatedPrinter output = new TabulatedPrinter(new FileOutputStream(matrixFile.toFile()));
+        TabulatedPrinter output = new TabulatedPrinter(new FileOutputStream(matrixFile.toFile()), x -> String.format("\"%s\"",x));
         if(transpose) {
             output.printTransposed(dt);
         } else {

@@ -48,6 +48,7 @@ public class Matricifier {
 				return true;
 			} else {
 				//System.out.println(var.getID() + " NC=" + var.getNoCallCount() + " f=" + f);
+
 				return false;
 			}
 		});
@@ -56,7 +57,7 @@ public class Matricifier {
 
 
 		outfmt.print(filterSNP.and(filterFrequency),new PlainVariantsSource(combinedVariants),Paths.get(base + "." + outfmt.getExt() + ".SNP.txt"));
-		outfmt.print(filterAll,new PlainVariantsSource(combinedVariants),Paths.get(base + ".ALL.txt"));
+		outfmt.print(filterAll,new PlainVariantsSource(combinedVariants),Paths.get(base + "." + outfmt.getExt() + ".ALL.txt"));
 	}
 
 

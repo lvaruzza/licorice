@@ -19,7 +19,7 @@ public class TestMemoryDataFrame {
 		df.addRow("2", Lists.newArrayList(4,5,6));
 		df.addRow("3", Lists.newArrayList(7,8,9));
 		
-		printer = new TabulatedPrinter(System.out);
+		printer = new TabulatedPrinter(System.out,x->String.format("\"%s\"",x));
 	}
 	
 	@Test

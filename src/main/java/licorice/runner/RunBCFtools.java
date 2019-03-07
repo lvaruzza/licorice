@@ -46,39 +46,48 @@ public class RunBCFtools extends RunBinary {
     }
 
     public Optional<Path> normalizeVariant(GenomeRef reference, int minQual,Path out, Path input) {
-        Path out1 = out.resolveSibling(out.getFileName() + ".split.vcf");
+        Path out1 = out.resolveSibling(out.getFileName() + ".split.vcf.gz");
 
-        Path out2 = out.resolveSibling(out.getFileName() + ".norm.vcf.gz");
+        //Path out2 = out.resolveSibling(out.getFileName() + ".norm.vcf.gz");
 
         int ret1=runBinary("bcftools","view",
-                "-a",
+//                "-a",
 //                Remove NOCALLs
 //                "-U",
+                String.format("-i \"QUAL>%d\"",minQual),
                 "-o",out1.toString(),
-                "-O","v",
+                "-O","z",
                 input.toString());
 
 
         if (ret1!=0) {
-            log.error(String.format("Alleles split of '%s' failed",input.toString()));
-            return Optional.empty();
+            log.error(String.format("Alleles split of '%s' failed", input.toString()));
+            throw new RuntimeException(String.format("Failed to run command", out1));
+        }
+
+        if (!Files.exists(out1)) {
+            throw new RuntimeException(String.format("Failed to genarate the file %s",out1));
         }
 
         int ret2=runBinary("bcftools","norm",
                 "-m-any",
                 "-f",reference.fastaFile().toString(),
-                "-o",out2.toString(),
+                "-o",out.toString(),
                 "-O","z",
-                out1.toString());
+                input.toString());
+                //out1.toString());
 
         if (ret2!=0) {
             log.error(String.format("Normalization of '%s' failed",out1.toString()));
-            return Optional.empty();
+            throw new RuntimeException(String.format("Failed to run command",out1));
         }
 
+        if (!Files.exists(out1)) {
+            throw new RuntimeException(String.format("Failed to genarate the file %s",out1));
+        }
 
-        int ret3=runBinary("bcftools","filter",
-                String.format("-i 'QUAL>=%d'",minQual),
+       /* int ret3=runBinary("bcftools","filter",
+                String.format("-i 'QUAL>%d'",minQual),
                 "-o",out.toString(),
                 "-O","z",
                 out2.toString());
@@ -87,7 +96,7 @@ public class RunBCFtools extends RunBinary {
             log.error(String.format("Filter of '%s' failed",out2.toString()));
             return Optional.empty();
         }
-
+        */
 
         int ret4=runBinary("bcftools","index",
                 "-t",

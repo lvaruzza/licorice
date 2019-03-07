@@ -32,6 +32,7 @@ public class RunBinary {
             ProcessBuilder pb = new ProcessBuilder(args);
 
             p = pb.start();
+            log.info(String.format("Process %s",p.info()));
 
             BufferedReader errorReader =
                     new BufferedReader(new InputStreamReader(p.getErrorStream()));
@@ -39,15 +40,17 @@ public class RunBinary {
             BufferedReader outReader =
                     new BufferedReader(new InputStreamReader(p.getInputStream()));
 
-            String lineErr = null ;
+            String lineErr = null;
             String lineOut = null;
 
-            while ((lineErr = errorReader.readLine())!= null ||
-                   (lineOut = outReader.readLine())!= null){
+            while ((lineErr = errorReader.readLine()) != null ||
+                    (lineOut = outReader.readLine()) != null) {
                 if (lineOut != null) log.debug(lineOut);
                 if (lineErr != null) log.error(lineErr);
             }
+
             p.waitFor();
+            log.info(String.format("%s exitValue: %d",args[0],p.exitValue()));
             return p.exitValue();
         } catch (Exception e) {
             log.error(e.getMessage());
@@ -81,7 +84,6 @@ public class RunBinary {
             while ((lineErr = errorReader.readLine())!= null){
                 log.error(lineErr);
             }
-
             return p.exitValue();
         } catch (Exception e) {
             log.error(e.getMessage());
